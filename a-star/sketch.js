@@ -64,7 +64,7 @@ function Spot(i, j)
   {
     var i = this.i;
     var j = this.j;
-
+    
     if (i < cols - 1)
     {
       this.neighbors.push(grid[i + 1][j]);
@@ -188,17 +188,21 @@ function draw()
           if (tempG < neighbor.g)
           {
             neighbor.g = tempG;
+
+            neighbor.h = heuristic(neighbor, end);
+            neighbor.f = neighbor.g + neighbor.h;
+            neighbor.previous = current;
           }
         }
         else
         {
           neighbor.g = tempG;
           openSet.push(neighbor);
-        }
 
-        neighbor.h = heuristic(neighbor, end);
-        neighbor.f = neighbor.g + neighbor.h;
-        neighbor.previous = current;
+          neighbor.h = heuristic(neighbor, end);
+          neighbor.f = neighbor.g + neighbor.h;
+          neighbor.previous = current;
+        }
       }
     }
   }
