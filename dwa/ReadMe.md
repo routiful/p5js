@@ -1,1 +1,1 @@
-https://routiful.github.io/p5js/a-star/
+https://routiful.github.io/p5js/dwa/
