@@ -1,32 +1,45 @@
 class Robot
 {
-  constructor(radius, x, y, theta)
+  constructor(robot_radius, x, y, theta)
   {
-    this.radius = radius;
+    this.radius = robot_radius;
+
     this.x = x;
     this.y = y;
     this.theta = theta;
-
-    this.lin_vel = 0.0;
-    this.ang_vel = 0.0;
   }
 
-  motion_update(lin_vel, ang_vel, duration, k = 1)
+  odom_update(lin_vel, ang_vel, dt)
   {
-    this.x = lin_vel * (k * duration * cos(ang_vel * (k * duration / 2.0)));
-    this.y = lin_vel * (k * duration * sin(ang_vel * (k * duration / 2.0)))
+    var delta_s = lin_vel * dt;
+    var delta_theta = ang_vel * dt;
+
+    this.x += delta_s * cos(this.theta + (delta_theta / 2.0));
+    this.y += delta_s * sin(this.theta + (delta_theta / 2.0));
+    this.theta += delta_theta;
+
+    text(this.x, width - 50, height - 60);
+    text(this.y, width - 50, height - 40);
+    text(this.theta, width - 50, height - 20);
   }
 
-  move()
+  motion_predict()
   {
+
+  }
+
+  draw()
+  {
+    // draw robot
     stroke(255, 0, 255);
     strokeWeight(1);
     fill(0);
-    ellipse(this.x, this.y, this.radius, this.radius);
+    ellipse(this.x, this.y, this.radius * 2, this.radius * 2);
 
+    // draw robot heading
     stroke(255, 0, 255);
     strokeWeight(1);
-    line(this.x, this.y, this.x + cos(this.theta) * (this.radius / 2), this.y + sin(this.theta) * (this.radius / 2));
+    line(this.x, this.y, this.x + cos(this.theta) * this.radius, this.y + sin(this.theta) * this.radius);
   }
 }
 
@@ -110,32 +123,8 @@ function Axis()
   }
 }
 
-function keyPressed() {
-  if (key == 'w')
-  {
-    lin_vel = lin_vel + 0.1;
-  }
-  else if (key == 'x')
-  {
-    lin_vel = lin_vel - 0.1;
-  }
-  else if (key == 'a')
-  {
-    ang_vel = ang_vel + 0.1;
-  }
-  else if (key == 'd')
-  {
-    ang_vel = ang_vel - 0.1;
-  }
-  else if (key == 's')
-  {
-    lin_vel = 0.0;
-    ang_vel = 0.0;
-  }
-}
-
 var axis = new Axis();
-var robot = new Robot(20, 50, 50, 0);
+var robot = new Robot(10.0, 50.0, 50.0, 0.0);
 
 var t = 0;
 var interval = 50;
@@ -154,8 +143,34 @@ function draw()
   {
     axis.show(width, height);
 
-    robot.move();
+    robot.odom_update(lin_vel, ang_vel, interval / 1000);
+    robot.draw();
 
     t = millis();
+  }
+}
+
+function keyPressed()
+{
+  if (key == 'w')
+  {
+    lin_vel = lin_vel + 5.0;
+  }
+  else if (key == 'x')
+  {
+    lin_vel = lin_vel - 5.0;
+  }
+  else if (key == 'a')
+  {
+    ang_vel = ang_vel - 0.5;
+  }
+  else if (key == 'd')
+  {
+    ang_vel = ang_vel + 0.5;
+  }
+  else if (key == 's')
+  {
+    lin_vel = 0.0;
+    ang_vel = 0.0;
   }
 }
