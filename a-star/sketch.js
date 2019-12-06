@@ -57,14 +57,14 @@ function Spot(i, j)
     }
 
     noStroke();
-    rect(this.i * w, this.j * h, w-1, h-1); 
+    rect(this.i * w, this.j * h, w-1, h-1);
   }
 
   this.addNeighbors = function(grid)
   {
     var i = this.i;
     var j = this.j;
-    
+
     if (i < cols - 1)
     {
       this.neighbors.push(grid[i + 1][j]);
@@ -94,7 +94,7 @@ function Spot(i, j)
     {
       this.neighbors.push(grid[i - 1][j - 1]);
     }
- 
+
     if (i > 0 && j < rows - 1)
     {
       this.neighbors.push(grid[i - 1][j + 1]);
@@ -107,7 +107,7 @@ function Spot(i, j)
   }
 }
 
-function setup() 
+function setup()
 {
   createCanvas(400, 400);
   console.log('A*');
@@ -116,12 +116,12 @@ function setup()
   h = height / rows;
 
   // Making a 2D array
-  for (var i = 0; i < cols; i++) 
+  for (var i = 0; i < cols; i++)
   {
     grid[i] = new Array(rows);
   }
 
-  for (var i = 0; i < cols; i++) 
+  for (var i = 0; i < cols; i++)
   {
     for (var j = 0; j < rows; j++)
     {
@@ -129,7 +129,7 @@ function setup()
     }
   }
 
-  for (var i = 0; i < cols; i++) 
+  for (var i = 0; i < cols; i++)
   {
     for (var j = 0; j < rows; j++)
     {
@@ -148,7 +148,7 @@ function setup()
   console.log(grid);
 }
 
-function draw() 
+function draw()
 {
   if (openSet.length > 0)
   {
