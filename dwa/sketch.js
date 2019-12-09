@@ -210,7 +210,7 @@ let scan_dist = 100.0;
 
 var axis = new Axis();
 var robot = new Robot(robot_radius, x_in, y_in, theta_in, scan_range, scan_dist);
-var obstacle = [];
+var obstacles = [];
 
 var t = 0;
 var interval = 50;
@@ -222,7 +222,12 @@ function setup()
 {
   createCanvas(400, 400);
 
-  obstacle[0] = new Obstacle(100, 100, 100, 150, 150, 150, 150, 100);
+  obstacles[0] = new Obstacle(100, 100, 100, 150, 150, 150, 150, 100);
+  // obstacles[0] = new Obstacle(55, 160, 116, 141, 120, 210, 49, 204);
+  // obstacles[1] = new Obstacle(155, 274, 253, 279, 216, 360, 144, 360);
+  // obstacles[2] = new Obstacle(264, 40, 347, 45, 358, 136, 264, 40);
+  // obstacles[3] = new Obstacle(215, 114, 265, 114, 265, 164, 215, 164);
+  // obstacles[4] = new Obstacle(134, 32, 188, 32, 158, 88, 134, 32);
 }
 
 function draw()
@@ -231,9 +236,9 @@ function draw()
   {
     axis.show(width, height);
 
-    for (var i = 0; i < obstacle.length; i++)
+    for (var i = 0; i < obstacles.length; i++)
     {
-      obstacle[i].show();
+      obstacles[i].show();
     }
 
     robot.odom_update(lin_vel, ang_vel, interval / 1000);
