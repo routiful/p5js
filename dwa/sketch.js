@@ -58,7 +58,14 @@ class Robot
       push();
       translate(this.x, this.y);
       rotate(this.theta);
-      this.scan_data[count].push(this.line_intersection(0.0, 0.0, ));
+      this.scan_data[count].push(
+        this.line_intersection(
+          0.0,
+          0.0,
+          cos(angle) * this.scan_dist,
+          sin(angle) * this.scan_dist,
+
+          ));
       pop();
     }
   }
