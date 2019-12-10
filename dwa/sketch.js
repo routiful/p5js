@@ -10,7 +10,7 @@ class Robot
 
     this.scan_range = scan_range;
     this.scan_dist = scan_dist;
-    this.scan_data = Array(Array(), Array());
+    this.scan_data = [];
  }
 
   odom_update(lin_vel, ang_vel, dt)
@@ -23,9 +23,9 @@ class Robot
     this.theta += delta_theta;
 
     fill(0);
-    text('x : ' + this.x, width - 50, height - 60);
-    text('y : ' + this.y, width - 50, height - 40);
-    text('theta : ' + this.theta, width - 50, height - 20);
+    text('x : ' + this.x, width - 80, height - 60);
+    text('y : ' + this.y, width - 80, height - 40);
+    text('theta : ' + this.theta, width - 80, height - 20);
   }
 
   scan_update(obstacle)
@@ -39,35 +39,44 @@ class Robot
 
       let b_dot_d_perp = bx * dy - by * dx;
 
-      if (b_dot_d_perp == 0) return Array(-1.0, -1.0);
+      if (b_dot_d_perp == 0) return {x: -1.0, y: -1.0};
 
       let cx = x3 - x1;
       let cy = y3 - y1;
 
       let t = (cx * dy - cy * dx) / b_dot_d_perp;
-      if (t < 0 || t > 1) return Array(-1.0, -1.0);
+      if (t < 0 || t > 1) return {x: -1.0, y: -1.0};
 
       let u = (cx * by - cy * bx) / b_dot_d_perp;
-      if (u < 0 || u > 1) return Array(-1.0, -1.0);
+      if (u < 0 || u > 1) return {x: -1.0, y: -1.0};
 
-      return Array(x1+t*bx, y1+t*by);
+      return {x: x1+t*bx, y: y1+t*by};
     }
 
-    for (var angle = scan_range[0], count = 0; angle < scan_range[1]; angle = angle + radians(5.0), count++)
-    {
-      push();
-      translate(this.x, this.y);
-      rotate(this.theta);
-      this.scan_data[count].push(
+    // for (var angle = scan_range[0], count = 0; angle < scan_range[1]; angle = angle + radians(5.0), count++)
+    // {
+      // push();
+      // translate(this.x, this.y);
+      // rotate(this.theta);
+      this.scan_data[0] =
         this.line_intersection(
-          0.0,
-          0.0,
-          cos(angle) * this.scan_dist,
-          sin(angle) * this.scan_dist,
+          this.x,
+          this.y,
+          this.x + cos(this.theta) * this.scan_dist,
+          this.y + sin(this.theta) * this.scan_dist,
+          obstacle.x1,
+          obstacle.y1,
+          obstacle.x2,
+          obstacle.y2
+          );
 
-          ));
-      pop();
-    }
+      console.log(this.scan_data[0]);
+      // console.log(obstacle.x1);
+      // console.log(obstacle.y1);
+      // console.log(obstacle.x2);
+      // console.log(obstacle.y2);
+      // pop();
+    // }
   }
 
   motion_predict()
@@ -88,12 +97,14 @@ class Robot
     strokeWeight(1);
     line(this.x, this.y, this.x + cos(this.theta) * this.radius, this.y + sin(this.theta) * this.radius);
 
-    // draw scan data
-    stroke(255, 255, 0);
     strokeWeight(1);
     for (var i = 0; i < this.scan_data.length; i++)
     {
-      line(this.x, this.y, this.x + this.scan_data, this.y + this.scan_data);
+      stroke(255, 0, 0);
+      line(this.x, this.y, this.x + cos(this.theta) * this.scan_data[0].x, this.y + sin(this.theta) * this.scan_data[0].y);
+
+      stroke(255, 255, 0);
+      line(this.x, this.y, this.x + cos(this.theta) * this.scan_dist, this.y + sin(this.theta) * this.scan_dist);
     }
   }
 }
@@ -236,12 +247,14 @@ function draw()
   {
     axis.show(width, height);
 
+    robot.odom_update(lin_vel, ang_vel, interval / 1000);
+
     for (var i = 0; i < obstacles.length; i++)
     {
       obstacles[i].show();
+      robot.scan_update(obstacles[i]);
     }
 
-    robot.odom_update(lin_vel, ang_vel, interval / 1000);
     robot.draw();
 
     t = millis();
