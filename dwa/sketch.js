@@ -1,6 +1,6 @@
 class Robot
 {
-  constructor(robot_radius, x, y, theta, scan_range, scan_dist)
+  constructor(robot_radius, x, y, theta, scan_range, scan_offset, scan_dist)
   {
     this.radius = robot_radius;
 
@@ -10,6 +10,7 @@ class Robot
 
     this.scan_range = scan_range;
     this.scan_dist = scan_dist;
+    this.scan_offset = scan_offset;
     this.scan_data = [];
  }
 
@@ -23,60 +24,157 @@ class Robot
     this.theta += delta_theta;
 
     fill(0);
-    text('x : ' + this.x, width - 80, height - 60);
-    text('y : ' + this.y, width - 80, height - 40);
+    textSize(8);
+    text('x : ' + this.x, width - 80, height - 40);
+    text('y : ' + this.y, width - 80, height - 30);
     text('theta : ' + this.theta, width - 80, height - 20);
+
+    text('lin_vel : ' + lin_vel, width - 80, height - 60);
+    text('ang_vel : ' + ang_vel, width - 80, height - 50);
   }
 
-  scan_update(obstacle)
+  scan_update(obstacles)
   {
+    // ref) https://www.openprocessing.org/sketch/135314/
     this.line_intersection = function(x1, y1, x2, y2, x3, y3, x4, y4)
     {
-      let bx = x2 - x1;
-      let by = y2 - y1;
-      let dx = x4 - x3;
-      let dy = y4 - y3;
+      var bx = x2 - x1;
+      var by = y2 - y1;
+      var dx = x4 - x3;
+      var dy = y4 - y3;
 
-      let b_dot_d_perp = bx * dy - by * dx;
+      var b_dot_d_perp = bx * dy - by * dx;
 
-      if (b_dot_d_perp == 0) return {x: -1.0, y: -1.0};
+      if (b_dot_d_perp == 0) return max(width, height);
 
-      let cx = x3 - x1;
-      let cy = y3 - y1;
+      var cx = x3 - x1;
+      var cy = y3 - y1;
 
-      let t = (cx * dy - cy * dx) / b_dot_d_perp;
-      if (t < 0 || t > 1) return {x: -1.0, y: -1.0};
+      var t = (cx * dy - cy * dx) / b_dot_d_perp;
+      if (t < 0 || t > 1) return max(width, height);
 
-      let u = (cx * by - cy * bx) / b_dot_d_perp;
-      if (u < 0 || u > 1) return {x: -1.0, y: -1.0};
+      var u = (cx * by - cy * bx) / b_dot_d_perp;
+      if (u < 0 || u > 1) return max(width, height);
 
-      return {x: x1+t*bx, y: y1+t*by};
+      var intersection_point_x = x1+t*bx;
+      var intersection_point_y = y1+t*by;
+
+      return sqrt(
+        (this.x - intersection_point_x) * (this.x - intersection_point_x) +
+        (this.y - intersection_point_y) * (this.y - intersection_point_y));
+
+      // return {x: x1+t*bx, y: y1+t*by};
     }
 
-    // for (var angle = scan_range[0], count = 0; angle < scan_range[1]; angle = angle + radians(5.0), count++)
-    // {
-      // push();
-      // translate(this.x, this.y);
-      // rotate(this.theta);
-      this.scan_data[0] =
-        this.line_intersection(
-          this.x,
-          this.y,
-          this.x + cos(this.theta) * this.scan_dist,
-          this.y + sin(this.theta) * this.scan_dist,
-          obstacle.x1,
-          obstacle.y1,
-          obstacle.x2,
-          obstacle.y2
+    var cnt = 0;
+    for (var i = this.scan_range[0]; i < this.scan_range[1]; i += this.scan_offset)
+    {
+      for (var j = 0; j < obstacles.length; j++)
+      {
+        var obj_dist = [];
+        obj_dist[0] =
+          this.line_intersection(
+            this.x,
+            this.y,
+            this.x + cos(this.theta + i) * this.scan_dist,
+            this.y + sin(this.theta + i) * this.scan_dist,
+            obstacles[j].x1,
+            obstacles[j].y1,
+            obstacles[j].x2,
+            obstacles[j].y2
           );
 
-      console.log(this.scan_data[0]);
-      // console.log(obstacle.x1);
-      // console.log(obstacle.y1);
-      // console.log(obstacle.x2);
-      // console.log(obstacle.y2);
-      // pop();
-    // }
+        obj_dist[1] =
+          this.line_intersection(
+            this.x,
+            this.y,
+            this.x + cos(this.theta + i) * this.scan_dist,
+            this.y + sin(this.theta + i) * this.scan_dist,
+            obstacles[j].x2,
+            obstacles[j].y2,
+            obstacles[j].x3,
+            obstacles[j].y3
+          );
+
+        obj_dist[2] =
+          this.line_intersection(
+            this.x,
+            this.y,
+            this.x + cos(this.theta + i) * this.scan_dist,
+            this.y + sin(this.theta + i) * this.scan_dist,
+            obstacles[j].x3,
+            obstacles[j].y3,
+            obstacles[j].x4,
+            obstacles[j].y4
+          );
+
+        obj_dist[3] =
+          this.line_intersection(
+            this.x,
+            this.y,
+            this.x + cos(this.theta + i) * this.scan_dist,
+            this.y + sin(this.theta + i) * this.scan_dist,
+            obstacles[j].x4,
+            obstacles[j].y4,
+            obstacles[j].x1,
+            obstacles[j].y1
+          );
+
+        obj_dist[4] =
+          this.line_intersection(
+            this.x,
+            this.y,
+            this.x + cos(this.theta + i) * this.scan_dist,
+            this.y + sin(this.theta + i) * this.scan_dist,
+            0.0,
+            0.0,
+            width,
+            0.0
+          );
+
+        obj_dist[5] =
+          this.line_intersection(
+            this.x,
+            this.y,
+            this.x + cos(this.theta + i) * this.scan_dist,
+            this.y + sin(this.theta + i) * this.scan_dist,
+            0.0,
+            0.0,
+            0.0,
+            height
+          );
+
+
+        obj_dist[6] =
+          this.line_intersection(
+            this.x,
+            this.y,
+            this.x + cos(this.theta + i) * this.scan_dist,
+            this.y + sin(this.theta + i) * this.scan_dist,
+            width,
+            0.0,
+            width,
+            height
+          );
+
+
+        obj_dist[7] =
+          this.line_intersection(
+            this.x,
+            this.y,
+            this.x + cos(this.theta + i) * this.scan_dist,
+            this.y + sin(this.theta + i) * this.scan_dist,
+            0.0,
+            height,
+            width,
+            height
+          );
+
+        this.scan_data[cnt] = min(obj_dist);
+        // console.log('scan_data[' + cnt + ']: ' + this.scan_data[cnt]);
+      }
+      cnt++;
+    }
   }
 
   motion_predict()
@@ -97,14 +195,25 @@ class Robot
     strokeWeight(1);
     line(this.x, this.y, this.x + cos(this.theta) * this.radius, this.y + sin(this.theta) * this.radius);
 
-    strokeWeight(1);
-    for (var i = 0; i < this.scan_data.length; i++)
+    // draw scan data
+    for (var i = this.scan_range[0], j = 0; i < this.scan_range[1]; i += radians(10.0), j++)
     {
-      stroke(255, 0, 0);
-      line(this.x, this.y, this.x + cos(this.theta) * this.scan_data[0].x, this.y + sin(this.theta) * this.scan_data[0].y);
+      push();
+      translate(this.x, this.y);
+      rotate(this.theta);
+      strokeWeight(1);
 
-      stroke(255, 255, 0);
-      line(this.x, this.y, this.x + cos(this.theta) * this.scan_dist, this.y + sin(this.theta) * this.scan_dist);
+      if (this.scan_data[j] >= max(width, height))
+      {
+        stroke(255, 255, 0);
+        line(0.0, 0.0, cos(i) * this.scan_dist, sin(i) * this.scan_dist);
+      }
+      else
+      {
+        stroke(255, 0, 0);
+        line(0.0, 0.0, cos(i) * this.scan_data[j], sin(i) * this.scan_data[j]);
+      }
+      pop();
     }
   }
 }
@@ -123,12 +232,12 @@ class Obstacle
     this.y3 = y3;
     this.y4 = y4;
 
-    this.color = (random(0, 255), random(0, 255), random(0, 255));
+    this.color = 150;
   }
 
   show()
   {
-    noStroke();
+    // noStroke();
     fill(this.color);
     quad(this.x1, this.y1, this.x2, this.y2, this.x3, this.y3, this.x4, this.y4);
   }
@@ -217,10 +326,11 @@ let x_in = 50.0;
 let y_in = 50.0;
 let theta_in = 0.0;
 let scan_range = [radians(-90.0), radians(90.0)];
+let scan_offset = radians(10.0);
 let scan_dist = 100.0;
 
 var axis = new Axis();
-var robot = new Robot(robot_radius, x_in, y_in, theta_in, scan_range, scan_dist);
+var robot = new Robot(robot_radius, x_in, y_in, theta_in, scan_range, scan_offset, scan_dist);
 var obstacles = [];
 
 var t = 0;
@@ -233,12 +343,12 @@ function setup()
 {
   createCanvas(400, 400);
 
-  obstacles[0] = new Obstacle(100, 100, 100, 150, 150, 150, 150, 100);
-  // obstacles[0] = new Obstacle(55, 160, 116, 141, 120, 210, 49, 204);
-  // obstacles[1] = new Obstacle(155, 274, 253, 279, 216, 360, 144, 360);
-  // obstacles[2] = new Obstacle(264, 40, 347, 45, 358, 136, 264, 40);
-  // obstacles[3] = new Obstacle(215, 114, 265, 114, 265, 164, 215, 164);
-  // obstacles[4] = new Obstacle(134, 32, 188, 32, 158, 88, 134, 32);
+  // obstacles[0] = new Obstacle(100, 100, 100, 150, 150, 150, 150, 100);
+  obstacles[0] = new Obstacle(55, 160, 116, 141, 120, 210, 49, 204);
+  obstacles[1] = new Obstacle(155, 274, 253, 279, 216, 360, 144, 360);
+  obstacles[2] = new Obstacle(264, 40, 347, 45, 358, 136, 264, 40);
+  obstacles[3] = new Obstacle(215, 114, 265, 114, 265, 164, 215, 164);
+  obstacles[4] = new Obstacle(134, 32, 188, 32, 158, 88, 134, 32);
 }
 
 function draw()
@@ -247,14 +357,13 @@ function draw()
   {
     axis.show(width, height);
 
-    robot.odom_update(lin_vel, ang_vel, interval / 1000);
-
     for (var i = 0; i < obstacles.length; i++)
     {
       obstacles[i].show();
-      robot.scan_update(obstacles[i]);
     }
 
+    robot.odom_update(lin_vel, ang_vel, interval / 1000);
+    robot.scan_update(obstacles);
     robot.draw();
 
     t = millis();
