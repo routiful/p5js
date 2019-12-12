@@ -45,36 +45,35 @@ class Robot
 
       var b_dot_d_perp = bx * dy - by * dx;
 
-      if (b_dot_d_perp == 0) return max(width, height);
+      if (b_dot_d_perp == 0) return sqrt(pow(width, 2), pow(height, 2));
 
       var cx = x3 - x1;
       var cy = y3 - y1;
 
       var t = (cx * dy - cy * dx) / b_dot_d_perp;
-      if (t < 0 || t > 1) return max(width, height);
+      if (t < 0 || t > 1) return sqrt(pow(width, 2), pow(height, 2));
 
       var u = (cx * by - cy * bx) / b_dot_d_perp;
-      if (u < 0 || u > 1) return max(width, height);
+      if (u < 0 || u > 1) return sqrt(pow(width, 2), pow(height, 2));
 
       var intersection_point_x = x1+t*bx;
       var intersection_point_y = y1+t*by;
 
       return sqrt(
-        (this.x - intersection_point_x) * (this.x - intersection_point_x) +
-        (this.y - intersection_point_y) * (this.y - intersection_point_y));
+        pow((this.x - intersection_point_x), 2) +
+        pow((this.y - intersection_point_y), 2));
 
       // return {x: x1+t*bx, y: y1+t*by};
     }
 
     var cnt = 0;
-    var obstacle_dist = [];
-    var min_obstacle_dist = [];
-
     for (var i = this.scan_range[0]; i < this.scan_range[1]; i += this.scan_offset)
     {
+      var min_obstacle_dist = [];
       for (var j = 0; j < obstacles.length; j++)
       {
-        obstacle_dist[0] =
+        var obstacle_dist = [];
+        obstacle_dist.push(
           this.line_intersection(
             this.x,
             this.y,
@@ -84,9 +83,9 @@ class Robot
             obstacles[j].y1,
             obstacles[j].x2,
             obstacles[j].y2
-          );
+          ));
 
-        obstacle_dist[1] =
+        obstacle_dist.push(
           this.line_intersection(
             this.x,
             this.y,
@@ -96,9 +95,9 @@ class Robot
             obstacles[j].y2,
             obstacles[j].x3,
             obstacles[j].y3
-          );
+          ));
 
-        obstacle_dist[2] =
+        obstacle_dist.push(
           this.line_intersection(
             this.x,
             this.y,
@@ -108,9 +107,9 @@ class Robot
             obstacles[j].y3,
             obstacles[j].x4,
             obstacles[j].y4
-          );
+          ));
 
-        obstacle_dist[3] =
+        obstacle_dist.push(
           this.line_intersection(
             this.x,
             this.y,
@@ -120,7 +119,7 @@ class Robot
             obstacles[j].y4,
             obstacles[j].x1,
             obstacles[j].y1
-          );
+          ));
 
         min_obstacle_dist[j] = min(obstacle_dist);
       }
