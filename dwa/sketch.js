@@ -173,7 +173,7 @@ class Robot
           height
         ));
 
-      console.log('min_obstacle_dist[' + min_obstacle_dist.length + ']: ' + min_obstacle_dist);
+      // console.log('min_obstacle_dist[' + min_obstacle_dist.length + ']: ' + min_obstacle_dist);
       this.scan_data[cnt] = min(min_obstacle_dist);
       // console.log('scan_data[' + cnt + ']: ' + this.scan_data[cnt]);
       cnt++;
@@ -343,6 +343,8 @@ var interval = 50;
 var lin_vel = 0.0;
 var ang_vel = 0.0;
 
+var goal_pose = {x: 0.0, y: 0.0};
+
 function setup()
 {
   createCanvas(400, 400);
@@ -353,6 +355,8 @@ function setup()
   obstacles[2] = new Obstacle(264, 40, 347, 45, 358, 136, 264, 40);
   obstacles[3] = new Obstacle(215, 114, 265, 114, 265, 164, 215, 164);
   obstacles[4] = new Obstacle(134, 32, 188, 32, 158, 88, 134, 32);
+
+  noLoop();
 }
 
 function draw()
@@ -360,6 +364,7 @@ function draw()
   if (millis() - t > interval)
   {
     axis.show(width, height);
+    ellipse(goal_pose.x, goal_pose.y, 5, 5);
 
     for (var i = 0; i < obstacles.length; i++)
     {
@@ -397,4 +402,16 @@ function keyPressed()
     lin_vel = 0.0;
     ang_vel = 0.0;
   }
+}
+
+function mousePressed()
+{
+  noLoop();
+
+  goal_pose = {x: mouseX, y: mouseY};
+  robot = new Robot(robot_radius, x_in, y_in, theta_in, scan_range, scan_offset, scan_dist);
+  lin_vel = 0.0;
+  ang_vel = 0.0;
+
+  loop();
 }
