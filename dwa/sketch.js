@@ -72,6 +72,15 @@ function draw()
     robot.scan_update(obstacles);
     robot.draw();
 
+    noStroke();
+    textSize(8);
+    text('x : ' + robot.x, width - 80, height - 40);
+    text('y : ' + robot.y, width - 80, height - 30);
+    text('theta : ' + robot.theta, width - 80, height - 20);
+
+    text('lin_vel : ' + lin_vel, width - 80, height - 60);
+    text('ang_vel : ' + ang_vel, width - 80, height - 50);
+
     t = millis();
   }
 }
