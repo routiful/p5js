@@ -8,16 +8,52 @@ class Robot
     this.y = y;
     this.theta = theta;
 
+    this.lin_vel = 0.0;
+    this.ang_vel = 0.0;
+
+    this.lin_acc = 0.0;
+    this.ang_acc = 0.0;
+
     this.scan_range = scan_range;
     this.scan_dist = scan_dist;
     this.scan_offset = scan_offset;
     this.scan_data = [];
- }
+  }
 
-  odom_update(lin_vel, ang_vel, dt)
+  odom_update(lin_vel, ang_vel, lin_acc, ang_acc, dt)
   {
-    var delta_s = lin_vel * dt;
-    var delta_theta = ang_vel * dt;
+    this.lin_acc = lin_acc;
+    this.ang_acc = ang_acc;
+
+    let epsilon = 0.0001;
+    if (lin_vel - this.lin_vel > epsilon)
+    {
+      this.lin_vel = this.lin_vel + this.lin_acc;
+    }
+    else if (lin_vel - this.lin_vel < -epsilon)
+    {
+      this.lin_vel = this.lin_vel - this.lin_acc;
+    }
+    else
+    {
+      this.lin_vel = lin_vel;
+    }
+
+    if (ang_vel - this.ang_vel > epsilon)
+    {
+      this.ang_vel = this.ang_vel + this.ang_acc;
+    }
+    else if (ang_vel - this.ang_vel < -epsilon)
+    {
+      this.ang_vel = this.ang_vel - this.ang_acc;
+    }
+    else
+    {
+      this.ang_vel = ang_vel;
+    }
+
+    var delta_s = this.lin_vel * dt;
+    var delta_theta = this.ang_vel * dt;
 
     this.x += delta_s * cos(this.theta + (delta_theta / 2.0));
     this.y += delta_s * sin(this.theta + (delta_theta / 2.0));

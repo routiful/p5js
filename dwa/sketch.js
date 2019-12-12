@@ -55,9 +55,11 @@ class DWA
 
 // robot config
 let robot_radius = 10.0;
+
 let x_in = 50.0;
 let y_in = 50.0;
 let theta_in = 0.0;
+
 let scan_range = [radians(-90.0), radians(90.0)];
 let scan_offset = radians(10.0);
 let scan_dist = 100.0;
@@ -72,6 +74,8 @@ var interval = 50;
 
 var lin_vel = 0.0;
 var ang_vel = 0.0;
+var lin_acc = 0.0;
+var ang_acc = 0.0;
 
 var goal_pose = {x: 0.0, y: 0.0};
 
@@ -103,7 +107,7 @@ function draw()
       obstacles[i].show();
     }
 
-    robot.odom_update(lin_vel, ang_vel, interval / 1000);
+    robot.odom_update(lin_vel, ang_vel, lin_acc, ang_acc, interval / 1000);
     robot.scan_update(obstacles);
     robot.draw();
 
@@ -113,14 +117,18 @@ function draw()
     text('y : ' + robot.y, width - 80, height - 30);
     text('theta : ' + robot.theta, width - 80, height - 20);
 
-    text('lin_vel : ' + lin_vel, width - 80, height - 60);
-    text('ang_vel : ' + ang_vel, width - 80, height - 50);
+    text('lin_vel : ' + robot.lin_vel, width - 80, height - 60);
+    text('ang_vel : ' + robot.ang_vel, width - 80, height - 50);
 
     t = millis();
   }
 }
+
 function keyPressed()
 {
+  lin_acc = 1.0;
+  ang_acc = 0.05;
+
   if (key == 'w')
   {
     lin_vel = lin_vel + 5.0;
