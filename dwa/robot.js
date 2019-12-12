@@ -22,15 +22,6 @@ class Robot
     this.x += delta_s * cos(this.theta + (delta_theta / 2.0));
     this.y += delta_s * sin(this.theta + (delta_theta / 2.0));
     this.theta += delta_theta;
-
-    fill(0);
-    textSize(8);
-    text('x : ' + this.x, width - 80, height - 40);
-    text('y : ' + this.y, width - 80, height - 30);
-    text('theta : ' + this.theta, width - 80, height - 20);
-
-    text('lin_vel : ' + lin_vel, width - 80, height - 60);
-    text('ang_vel : ' + ang_vel, width - 80, height - 50);
   }
 
   scan_update(obstacles)
@@ -180,11 +171,6 @@ class Robot
     }
   }
 
-  motion_predict()
-  {
-
-  }
-
   draw()
   {
     // draw robot
@@ -198,7 +184,6 @@ class Robot
     strokeWeight(1);
     line(this.x, this.y, this.x + cos(this.theta) * this.radius, this.y + sin(this.theta) * this.radius);
 
-        // console.log('scan_data : ' + this.scan_data);
     // draw scan data
     for (var i = this.scan_range[0], j = 0; i < this.scan_range[1]; i += this.scan_offset, j++)
     {
