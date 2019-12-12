@@ -52,8 +52,8 @@ class Robot
       this.ang_vel = ang_vel;
     }
 
-    var delta_s = this.lin_vel * dt;
-    var delta_theta = this.ang_vel * dt;
+    let delta_s = this.lin_vel * dt;
+    let delta_theta = this.ang_vel * dt;
 
     this.x += delta_s * cos(this.theta + (delta_theta / 2.0));
     this.y += delta_s * sin(this.theta + (delta_theta / 2.0));
@@ -65,41 +65,39 @@ class Robot
     // ref) https://www.openprocessing.org/sketch/135314/
     this.line_intersection = function(x1, y1, x2, y2, x3, y3, x4, y4)
     {
-      var bx = x2 - x1;
-      var by = y2 - y1;
-      var dx = x4 - x3;
-      var dy = y4 - y3;
+      let bx = x2 - x1;
+      let by = y2 - y1;
+      let dx = x4 - x3;
+      let dy = y4 - y3;
 
-      var b_dot_d_perp = bx * dy - by * dx;
+      let b_dot_d_perp = bx * dy - by * dx;
 
       if (b_dot_d_perp == 0) return sqrt(pow(width, 2), pow(height, 2));
 
-      var cx = x3 - x1;
-      var cy = y3 - y1;
+      let cx = x3 - x1;
+      let cy = y3 - y1;
 
-      var t = (cx * dy - cy * dx) / b_dot_d_perp;
+      let t = (cx * dy - cy * dx) / b_dot_d_perp;
       if (t < 0 || t > 1) return sqrt(pow(width, 2), pow(height, 2));
 
-      var u = (cx * by - cy * bx) / b_dot_d_perp;
+      let u = (cx * by - cy * bx) / b_dot_d_perp;
       if (u < 0 || u > 1) return sqrt(pow(width, 2), pow(height, 2));
 
-      var intersection_point_x = x1+t*bx;
-      var intersection_point_y = y1+t*by;
+      let intersection_point_x = x1+t*bx;
+      let intersection_point_y = y1+t*by;
 
       return sqrt(
         pow((this.x - intersection_point_x), 2) +
         pow((this.y - intersection_point_y), 2));
-
-      // return {x: x1+t*bx, y: y1+t*by};
     }
 
-    var cnt = 0;
-    for (var i = this.scan_range[0]; i < this.scan_range[1]; i += this.scan_offset)
+    let cnt = 0;
+    for (let i = this.scan_range[0]; i < this.scan_range[1]; i += this.scan_offset)
     {
-      var min_obstacle_dist = [];
-      for (var j = 0; j < obstacles.length; j++)
+      let min_obstacle_dist = [];
+      for (let j = 0; j < obstacles.length; j++)
       {
-        var obstacle_dist = [];
+        let obstacle_dist = [];
         obstacle_dist.push(
           this.line_intersection(
             this.x,
@@ -221,7 +219,7 @@ class Robot
     line(this.x, this.y, this.x + cos(this.theta) * this.radius, this.y + sin(this.theta) * this.radius);
 
     // draw scan data
-    for (var i = this.scan_range[0], j = 0; i < this.scan_range[1]; i += this.scan_offset, j++)
+    for (let i = this.scan_range[0], j = 0; i < this.scan_range[1]; i += this.scan_offset, j++)
     {
       push();
       translate(this.x, this.y);
