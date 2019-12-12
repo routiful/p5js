@@ -46,7 +46,6 @@ function setup()
 {
   createCanvas(400, 400);
 
-  // obstacles[0] = new Obstacle(100, 100, 100, 150, 150, 150, 150, 100);
   obstacles[0] = new Obstacle(55, 160, 116, 141, 120, 210, 49, 204);
   obstacles[1] = new Obstacle(155, 274, 253, 279, 216, 360, 144, 360);
   obstacles[2] = new Obstacle(264, 40, 347, 45, 358, 136, 264, 40);
@@ -84,7 +83,6 @@ function draw()
     t = millis();
   }
 }
-
 function keyPressed()
 {
   if (key == 'w')
@@ -120,57 +118,4 @@ function mousePressed()
   ang_vel = 0.0;
 
   loop();
-}
-
-function Axis()
-{
-  this.show = function(x, y)
-  {
-    background(255);
-
-    for (let i = 0, k = 0; i < x; i = i + 10, k++)
-    {
-      stroke(0);
-      strokeWeight(1);
-
-      if (k % 5 == 0)
-      {
-        line(i, 0, i, 15);
-      }
-      else
-      {
-        line(i, 0, i, 10);
-      }
-    }
-
-    for (let j = 0, k = 0; j < y; j = j + 10, k++)
-    {
-      stroke(0);
-      strokeWeight(1);
-
-      if (k % 5 == 0)
-      {
-        line(0, j, 15, j);
-      }
-      else
-      {
-        line(0, j, 10, j);
-      }
-    }
-
-    stroke(255, 0, 0); // Red
-    strokeWeight(10);
-    line(0, 0, x, 0);
-
-    stroke(0, 255, 0); // Blue
-    strokeWeight(10);
-    line(0, 0, 0, y);
-
-    noStroke();
-  }
-}
-
-function radians(deg)
-{
-  return deg * Math.PI / 180;
 }
