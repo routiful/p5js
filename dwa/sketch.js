@@ -1,40 +1,74 @@
 class DWA
 {
   constructor(
-    robot_radius,
-    max_vel,
-    min_vel,
-    max_yawrate,
-    max_accel,
-    max_dyawrate,
+    max_lin_vel,
+    min_lin_vel,
+    max_ang_vel,
+    min_ang_vel,
+    limit_lin_acc,
+    limit_ang_acc,
     v_reso,
+    yawrate_reso,
     dt,
     predict_time,
     heading_cost_gain,
     velocity_cost_gain,
     clearance_cost_gain)
   {
-    this.max_vel = max_vel;
-    this.min_vel = min_vel;
-    this.max_yawrate = max_yawrate;
-    this.max_accel = max_accel;
+    this.max_lin_vel = max_lin_vel;
+    this.min_lin_vel = min_lin_vel;
 
-    this.max_dyawrate = max_dyawrate;
+    this.max_ang_vel = max_ang_vel;
+    this.min_ang_vel = min_ang_vel;
+
+    this.limit_lin_acc = limit_lin_acc;
+    this.limit_ang_acc = limit_ang_acc;
 
     this.v_reso = v_reso;
+    this.yawrate_reso = yawrate_reso;
+
     this.dt = dt;
     this.predict_time = predict_time;
 
     this.heading_cost_gain = heading_cost_gain;
     this.velocity_cost_gain = velocity_cost_gain;
     this.clearance_cost_gain = clearance_cost_gain;
-
-    this.robot_radius = robot_radius;
   }
 
-  motion_predict()
+  motion_predict(x, u, dt)
   {
+    // x[] : x_pos, y_pos, theta, lin_vel, ang_vel
+    // u[] : lin_vel, ang_vel
+    // dt : control period time
 
+    x[2] += u[1] * dt;
+
+    x[0] += u[0] * dt * cos(x[2]);
+    x[1] += u[0] * dt * sin(x[2]);
+
+    x[3] = u[0];
+    x[4] = u[1];
+
+    return x;
+  }
+
+  update_dynamic_window(x)
+  {
+    // update possible velocity
+    let Vs = [this.min_lin_vel, this.max_lin_vel, this.min_ang_vel, this.max_ang_vel];
+
+    // update admissible velocity
+    let Vd = [
+      x[3] - this.limit_lin_acc * this.dt,
+      x[3] + this.limit_lin_acc * this.dt,
+      x[4] - this.limit_ang_acc * this.dt,
+      x[4] + this.limit_ang_acc * this.dt];
+
+    // [vmin,vmax, yaw_rate min, yaw_rate max]
+    this.dw = [max(Vs[0], Vd[0]), min(Vs[1], Vd[1]),
+          max(Vs[2], Vd[2]), min(Vs[3], Vd[3])]
+
+    return dw
   }
 
   heading()
@@ -64,20 +98,41 @@ let scan_range = [radians(-90.0), radians(90.0)];
 let scan_offset = radians(10.0);
 let scan_dist = 100.0;
 
-var axis;
-var robot;
-var obstacles = [];
-var dwa;
+// dwa config
+let max_lin_vel = 5.0;
+let min_lin_vel = 0.0;
 
-var t = 0;
-var interval = 50;
+let max_ang_vel = 0.5;
+let min_ang_vel = -0.5;
 
-var lin_vel = 0.0;
-var ang_vel = 0.0;
-var lin_acc = 0.0;
-var ang_acc = 0.0;
+let limit_lin_acc = 1.0;
+let limit_ang_acc = 0.025;
 
-var goal_pose = {x: 0.0, y: 0.0};
+let v_reso = 0.01;
+let yawrate_reso = 0.1;
+
+let dt = 0.050; // sec
+let predict_time = 3.0; //sec
+
+let heading_cost_gain = 1.0;
+let velocity_cost_gain = 1.0;
+let clearance_cost_gain = 1.0;
+
+// initialization
+let axis;
+let robot;
+let obstacles = [];
+let dwa;
+
+let t = 0;
+
+let lin_vel = 0.0;
+let ang_vel = 0.0;
+let lin_acc = 0.0;
+let ang_acc = 0.0;
+
+let robot_state = [x_in, y_in, theta_in, lin_vel, ang_vel];
+let goal_pose = {x: 0.0, y: 0.0};
 
 function setup()
 {
@@ -85,6 +140,20 @@ function setup()
 
   axis = new Axis();
   robot = new Robot(robot_radius, x_in, y_in, theta_in, scan_range, scan_offset, scan_dist);
+  dwa = new DWA(
+    max_lin_vel,
+    min_lin_vel,
+    max_ang_vel,
+    min_ang_vel,
+    limit_lin_acc,
+    limit_ang_acc,
+    v_reso,
+    yawrate_reso,
+    dt,
+    predict_time,
+    heading_cost_gain,
+    velocity_cost_gain,
+    clearance_cost_gain);
 
   obstacles[0] = new Obstacle(55, 160, 116, 141, 120, 210, 49, 204);
   obstacles[1] = new Obstacle(155, 274, 253, 279, 216, 360, 144, 360);
@@ -97,17 +166,19 @@ function setup()
 
 function draw()
 {
-  if (millis() - t > interval)
+  if (millis() - t > dt * 1000)
   {
     axis.show(width, height);
     ellipse(goal_pose.x, goal_pose.y, 5, 5);
 
-    for (var i = 0; i < obstacles.length; i++)
+    for (let i = 0; i < obstacles.length; i++)
     {
       obstacles[i].show();
     }
 
-    robot.odom_update(lin_vel, ang_vel, lin_acc, ang_acc, interval / 1000);
+    robot_state = dwa.motion_predict(robot_state, [lin_vel, ang_vel], dt);
+
+    robot.odom_update(lin_vel, ang_vel, lin_acc, ang_acc, dt);
     robot.scan_update(obstacles);
     robot.draw();
 
@@ -126,24 +197,24 @@ function draw()
 
 function keyPressed()
 {
-  lin_acc = 1.0;
-  ang_acc = 0.05;
+  lin_acc = limit_lin_acc;
+  ang_acc = limit_ang_acc;
 
   if (key == 'w')
   {
-    lin_vel = lin_vel + 5.0;
+    lin_vel = lin_vel + max_lin_vel;
   }
   else if (key == 'x')
   {
-    lin_vel = lin_vel - 5.0;
+    lin_vel = lin_vel - max_lin_vel;
   }
   else if (key == 'a')
   {
-    ang_vel = ang_vel - 0.5;
+    ang_vel = ang_vel - max_ang_vel;
   }
   else if (key == 'd')
   {
-    ang_vel = ang_vel + 0.5;
+    ang_vel = ang_vel + max_ang_vel;
   }
   else if (key == 's')
   {
@@ -160,6 +231,8 @@ function mousePressed()
   robot = new Robot(robot_radius, x_in, y_in, theta_in, scan_range, scan_offset, scan_dist);
   lin_vel = 0.0;
   ang_vel = 0.0;
+
+  robot_state = [x_in, y_in, theta_in, lin_vel, ang_vel];
 
   loop();
 }
