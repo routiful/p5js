@@ -89,6 +89,11 @@ class DWA
     return Vr;
   }
 
+  calc_input(x, Vr, goal_pose, scan_data)
+  {
+
+  }
+
   heading()
   {
 
