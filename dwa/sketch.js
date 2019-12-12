@@ -1,6 +1,38 @@
 class DWA
 {
-  constructor(max_tv, min_tv, max_rv, min_rv)
+  constructor(
+    robot_radius,
+    max_vel,
+    min_vel,
+    max_yawrate,
+    max_accel,
+    max_dyawrate,
+    v_reso,
+    dt,
+    predict_time,
+    heading_cost_gain,
+    velocity_cost_gain,
+    clearance_cost_gain)
+  {
+    this.max_vel = max_vel;
+    this.min_vel = min_vel;
+    this.max_yawrate = max_yawrate;
+    this.max_accel = max_accel;
+
+    this.max_dyawrate = max_dyawrate;
+
+    this.v_reso = v_reso;
+    this.dt = dt;
+    this.predict_time = predict_time;
+
+    this.heading_cost_gain = heading_cost_gain;
+    this.velocity_cost_gain = velocity_cost_gain;
+    this.clearance_cost_gain = clearance_cost_gain;
+
+    this.robot_radius = robot_radius;
+  }
+
+  motion_predict()
   {
 
   }
@@ -30,9 +62,10 @@ let scan_range = [radians(-90.0), radians(90.0)];
 let scan_offset = radians(10.0);
 let scan_dist = 100.0;
 
-var axis = new Axis();
-var robot = new Robot(robot_radius, x_in, y_in, theta_in, scan_range, scan_offset, scan_dist);
+var axis;
+var robot;
 var obstacles = [];
+var dwa;
 
 var t = 0;
 var interval = 50;
@@ -45,6 +78,9 @@ var goal_pose = {x: 0.0, y: 0.0};
 function setup()
 {
   createCanvas(400, 400);
+
+  axis = new Axis();
+  robot = new Robot(robot_radius, x_in, y_in, theta_in, scan_range, scan_offset, scan_dist);
 
   obstacles[0] = new Obstacle(55, 160, 116, 141, 120, 210, 49, 204);
   obstacles[1] = new Obstacle(155, 274, 253, 279, 216, 360, 144, 360);
