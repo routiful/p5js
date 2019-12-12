@@ -72,16 +72,16 @@ class Robot
 
       let b_dot_d_perp = bx * dy - by * dx;
 
-      if (b_dot_d_perp == 0) return sqrt(pow(width, 2), pow(height, 2));
+      if (b_dot_d_perp == 0) return this.scan_dist;
 
       let cx = x3 - x1;
       let cy = y3 - y1;
 
       let t = (cx * dy - cy * dx) / b_dot_d_perp;
-      if (t < 0 || t > 1) return sqrt(pow(width, 2), pow(height, 2));
+      if (t < 0 || t > 1) return this.scan_dist;
 
       let u = (cx * by - cy * bx) / b_dot_d_perp;
-      if (u < 0 || u > 1) return sqrt(pow(width, 2), pow(height, 2));
+      if (u < 0 || u > 1) return this.scan_dist;
 
       let intersection_point_x = x1+t*bx;
       let intersection_point_y = y1+t*by;
@@ -226,7 +226,7 @@ class Robot
       rotate(this.theta);
       strokeWeight(1);
 
-      if (this.scan_data[j] >= max(width, height))
+      if (this.scan_data[j] >= this.scan_dist)
       {
         stroke(255, 255, 0);
         line(0.0, 0.0, cos(i) * this.scan_dist, sin(i) * this.scan_dist);
