@@ -38,16 +38,12 @@ let dwa;
 let mouse_pressed_cnt = 0;
 let t = 0;
 
-let lin_vel = 0.0;
-let ang_vel = 0.0;
+let vel = [0.0, 0.0];
+let acc = [0.0, 0.0];
 
-let lin_acc = 0.0;
-let ang_acc = 0.0;
-
-let predicted_robot_state = [x_in, y_in, theta_in, lin_vel, ang_vel];
+let predicted_robot_state = [x_in, y_in, theta_in, vel[0], vel[1]];
 let goal_pose = [];
 let dynamic_window = [];
-let goal_trajectory = [];
 
 function setup()
 {
@@ -95,40 +91,54 @@ function draw()
       obstacles[i].show();
     }
 
-    robot.odom_update(lin_vel, ang_vel, lin_acc, ang_acc, dt);
     robot.scan_update(obstacles);
 
-    predicted_robot_state = dwa.motion_predict(predicted_robot_state, [lin_vel, ang_vel], dt);
-    dwa.update_dynamic_window(predicted_robot_state, robot.scan_data);
+    predicted_robot_state = dwa.motion_predict(predicted_robot_state, vel, dt);
+    dynamic_window = dwa.update_dynamic_window(predicted_robot_state, robot.scan_data);
+    // vel = dwa.update_velocity_input(
+    //   predicted_robot_state,
+    //   dynamic_window,
+    //   [goal_pose[0], goal_pose[1], goal_pose[4]],
+    //   robot.scan_data);
 
-
+    robot.odom_update(vel[0], vel[1], acc[0], acc[1], dt);
     robot.draw();
 
-    noStroke();
-    textSize(8);
-    text('lin_vel : ' + robot.lin_vel, width - 60, height - 130);
-    text('ang_vel : ' + robot.ang_vel, width - 60, height - 120);
-
-    text(' ', width - 60, height - 110);
-    text('[current]', width - 60, height - 100);
-    text('x : ' + robot.x, width - 60, height - 90);
-    text('y : ' + robot.y, width - 60, height - 80);
-    text('theta : ' + robot.theta, width - 60, height - 70);
-
-    text(' ', width - 60, height - 60);
-    text('[target]', width - 60, height - 50);
-    text('x : ' + goal_pose[0], width - 60, height - 40);
-    text('y : ' + goal_pose[1], width - 60, height - 30);
-    text('theta : ' + goal_pose[4], width - 60, height - 20);
+    debug_code();
 
     t = millis();
   }
 }
 
+function debug_code()
+{
+  noStroke();
+  textSize(8);
+  text('lin_vel : ' + robot.lin_vel, width - 60, height - 150);
+  text('ang_vel : ' + robot.ang_vel, width - 60, height - 140);
+  text('lin_acc : ' + robot.lin_acc, width - 60, height - 130);
+  text('ang_acc : ' + robot.ang_acc, width - 60, height - 120);
+
+  text(' ', width - 60, height - 110);
+  text('[current]', width - 60, height - 100);
+  text('x : ' + robot.x, width - 60, height - 90);
+  text('y : ' + robot.y, width - 60, height - 80);
+  text('theta : ' + robot.theta, width - 60, height - 70);
+
+  text(' ', width - 60, height - 60);
+  text('[target]', width - 60, height - 50);
+  text('x : ' + goal_pose[0], width - 60, height - 40);
+  text('y : ' + goal_pose[1], width - 60, height - 30);
+  text('theta : ' + goal_pose[4], width - 60, height - 20);
+}
+
 function keyPressed()
 {
-  lin_acc = limit_lin_acc;
-  ang_acc = limit_ang_acc;
+  acc[0] = limit_lin_acc;
+  acc[1] = limit_ang_acc;
+
+  let lin_vel = vel[0];
+  let ang_vel = vel[1];
 
   if (key == 'w')
   {
@@ -151,6 +161,9 @@ function keyPressed()
     lin_vel = 0.0;
     ang_vel = 0.0;
   }
+
+  vel[0] = lin_vel;
+  vel[1] = ang_vel;
 }
 
 function mousePressed()
@@ -171,12 +184,10 @@ function mousePressed()
 
     robot = new Robot(robot_radius, x_in, y_in, theta_in, scan_range, scan_offset, scan_dist);
 
-    lin_vel = 0.0;
-    ang_vel = 0.0;
-    lin_acc = 0.0;
-    ang_acc = 0.0;
+    vel = [0.0, 0.0];
+    acc = [0.0, 0.0];
 
-    predicted_robot_state = [x_in, y_in, theta_in, lin_vel, ang_vel];
+    predicted_robot_state = [x_in, y_in, theta_in, vel[0], vel[1]];
 
     mouse_pressed_cnt = 0;
 
