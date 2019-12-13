@@ -39,7 +39,7 @@ let mouse_pressed_cnt = 0;
 let t = 0;
 
 let vel = [0.0, 0.0];
-let acc = [0.0, 0.0];
+let acc = [limit_lin_acc, limit_ang_acc];
 
 let predicted_robot_state = [x_in, y_in, theta_in, vel[0], vel[1]];
 let goal_pose = [];
@@ -134,9 +134,6 @@ function debug_code()
 
 function keyPressed()
 {
-  acc[0] = limit_lin_acc;
-  acc[1] = limit_ang_acc;
-
   let lin_vel = vel[0];
   let ang_vel = vel[1];
 
@@ -182,6 +179,7 @@ function mousePressed()
     goal_pose.push(mouseY);
     goal_pose.push(atan2(goal_pose[3] - goal_pose[1], goal_pose[2] - goal_pose[0]));
 
+    // re-initialization
     robot = new Robot(robot_radius, x_in, y_in, theta_in, scan_range, scan_offset, scan_dist);
 
     vel = [0.0, 0.0];
