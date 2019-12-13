@@ -33,6 +33,8 @@ class DWA
     this.heading_cost_gain = heading_cost_gain;
     this.velocity_cost_gain = velocity_cost_gain;
     this.clearance_cost_gain = clearance_cost_gain;
+
+    this.goal_trajectory = [];
   }
 
   motion_predict(state, input, dt)
@@ -94,6 +96,9 @@ class DWA
     let lin_vel;
     let ang_vel;
 
+    let min_cost = Infinity;
+
+    for (let i = 0; i < )
 
 
     return [lin_vel, ang_vel];
