@@ -50,3 +50,28 @@ function radians(deg)
 {
   return deg * Math.PI / 180;
 }
+
+function fmod(x,n)
+{
+  if (x > n)
+    return x - n;
+  else
+    return x;
+}
+
+function normalize_angle_positive(angle)
+{
+  return fmod(fmod(angle, 2.0 * Math.PI) + 2.0 * Math.PI, 2.0 * Math.PI);
+}
+
+function normalize_angle(angle)
+{
+  let a = normalize_angle_positive(angle);
+  if (a > Math.PI)
+  {
+    a -= 2.0 * Math.PI;
+  }
+
+  return a;
+}
+
