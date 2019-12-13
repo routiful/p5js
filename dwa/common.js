@@ -51,6 +51,7 @@ function radians(deg)
   return deg * Math.PI / 180;
 }
 
+// ref) https://github.com/ros/angles/blob/master/angles/include/angles/angles.h
 function fmod(x,n)
 {
   if (x > n)
