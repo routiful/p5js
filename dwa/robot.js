@@ -58,6 +58,8 @@ class Robot
     this.x += delta_s * cos(this.theta + (delta_theta / 2.0));
     this.y += delta_s * sin(this.theta + (delta_theta / 2.0));
     this.theta += delta_theta;
+
+    this.theta = normalize_angle(this.theta);
   }
 
   scan_update(obstacles)
@@ -207,17 +209,6 @@ class Robot
 
   draw()
   {
-    // draw robot
-    stroke(255, 0, 255);
-    strokeWeight(1);
-    fill(0);
-    ellipse(this.x, this.y, this.radius * 2, this.radius * 2);
-
-    // draw robot heading
-    stroke(255, 0, 255);
-    strokeWeight(1);
-    line(this.x, this.y, this.x + cos(this.theta) * this.radius, this.y + sin(this.theta) * this.radius);
-
     // draw scan data
     for (let i = this.scan_range[0], j = 0; i < this.scan_range[1]; i += this.scan_offset, j++)
     {
@@ -238,5 +229,17 @@ class Robot
       }
       pop();
     }
+
+    // draw robot
+    stroke(255, 0, 255);
+    strokeWeight(1);
+    fill(0);
+    ellipse(this.x, this.y, this.radius * 2, this.radius * 2);
+
+    // draw robot heading
+    stroke(255, 0, 255);
+    strokeWeight(2);
+    line(this.x, this.y, this.x + cos(this.theta) * this.radius, this.y + sin(this.theta) * this.radius);
+
   }
 }
