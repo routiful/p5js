@@ -54,21 +54,17 @@ class DWA
     return state;
   }
 
-  update_dynamic_window(state, scan_data)
+  update_search_space(state, closest_obstacle_dist)
   {
     // update possible velocity
     let Vs = [this.min_lin_vel, this.max_lin_vel, this.min_ang_vel, this.max_ang_vel];
 
     // update admissible velocity
-    let Va = [];
-    for (let i = 0; i < scan_data.length; i++)
-    {
-      Va.push([
-        this.min_lin_vel,
-        sqrt(2 * scan_data[i] * this.limit_lin_acc),
-        this.min_ang_vel,
-        sqrt(2 * scan_data[i] * this.limit_ang_acc)]);
-    }
+    let Va = [
+      this.min_lin_vel,
+      sqrt(2 * closest_obstacle_dist * this.limit_lin_acc),
+      this.min_ang_vel,
+      sqrt(2 * closest_obstacle_dist * this.limit_ang_acc)];
 
     // update dynamic window velocity
     let Vd = [
@@ -78,27 +74,23 @@ class DWA
       state[4] + this.limit_ang_acc * this.dt];
 
     // update resulting velocity
-    let Vr = [];
-    for (let i = 0; i < Va.length; i++)
-    {
-      Vr.push([
-        max(Vd[0], max(Vs[0], Va[i][0])),
-        min(Vd[1], min(Vs[1], Va[i][1])),
-        max(Vd[2], max(Vs[2], Va[i][2])),
-        min(Vd[3], min(Vs[3], Va[i][3]))]);
-    }
+    let Vr = [
+      max(Vd[0], max(Vs[0], Va[0])),
+      min(Vd[1], min(Vs[1], Va[1])),
+      max(Vd[2], max(Vs[2], Va[2])),
+      min(Vd[3], min(Vs[3], Va[3]))];
 
     return Vr;
   }
 
-  update_velocity_input(state, Vr, goal_pose, scan_data)
+  maximizing_objective_function(state, dt, Vr, goal_pose, scan_data)
   {
     let lin_vel;
     let ang_vel;
 
     let min_cost = Infinity;
 
-    for (let i = 0; i < )
+    // for (let i = 0; i < )
 
 
     return [lin_vel, ang_vel];
