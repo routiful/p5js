@@ -10,7 +10,7 @@ let scan_offset = radians(10.0);
 let scan_dist = 100.0;
 
 // dwa config
-let max_lin_vel = 5.0;
+let max_lin_vel = 10.0;
 let min_lin_vel = 0.0;
 
 let max_ang_vel = 0.5;
@@ -43,7 +43,7 @@ let acc = [limit_lin_acc, limit_ang_acc];
 
 let predicted_robot_state = [x_in, y_in, theta_in, vel[0], vel[1]];
 let goal_pose = [];
-let dynamic_window = [];
+let resulting_search_space = [];
 
 function setup()
 {
@@ -94,8 +94,8 @@ function draw()
     robot.scan_update(obstacles);
 
     predicted_robot_state = dwa.motion_predict(predicted_robot_state, vel, dt);
-    dynamic_window = dwa.update_dynamic_window(predicted_robot_state, robot.scan_data);
-    // vel = dwa.update_velocity_input(
+    resulting_search_space = dwa.update_search_space(predicted_robot_state, min(robot.scan_data));
+    // vel = dwa.maximizing_objective_function(
     //   predicted_robot_state,
     //   dynamic_window,
     //   [goal_pose[0], goal_pose[1], goal_pose[4]],
@@ -137,21 +137,27 @@ function keyPressed()
   let lin_vel = vel[0];
   let ang_vel = vel[1];
 
+  acc[0] = limit_lin_acc;
+  acc[1] = limit_ang_acc;
+
+  let lin_vel_step = 2.5;
+  let ang_vel_step = 0.025;
+
   if (key == 'w')
   {
-    lin_vel = lin_vel + max_lin_vel;
+    lin_vel = lin_vel + lin_vel_step;
   }
   else if (key == 'x')
   {
-    lin_vel = lin_vel - max_lin_vel;
+    lin_vel = lin_vel - lin_vel_step;
   }
   else if (key == 'a')
   {
-    ang_vel = ang_vel - max_ang_vel;
+    ang_vel = ang_vel - ang_vel_step;
   }
   else if (key == 'd')
   {
-    ang_vel = ang_vel + max_ang_vel;
+    ang_vel = ang_vel + ang_vel_step;
   }
   else if (key == 's')
   {
