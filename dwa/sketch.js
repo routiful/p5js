@@ -19,11 +19,11 @@ let min_ang_vel = -0.5;
 let limit_lin_acc = 1.0;
 let limit_ang_acc = 0.025;
 
-let v_reso = 0.01;
-let yawrate_reso = 0.1;
+let vx_samples = 3;
+let vth_samples = 5;
 
 let dt = 0.050; // sec
-let predict_time = 3.0; //sec
+let sim_time = 1.0; //sec
 
 let heading_cost_gain = 1.0;
 let velocity_cost_gain = 1.0;
@@ -58,10 +58,10 @@ function setup()
     min_ang_vel,
     limit_lin_acc,
     limit_ang_acc,
-    v_reso,
-    yawrate_reso,
+    vx_samples,
+    vth_samples,
+    sim_time,
     dt,
-    predict_time,
     heading_cost_gain,
     velocity_cost_gain,
     clearance_cost_gain);
@@ -93,13 +93,13 @@ function draw()
 
     robot.scan_update(obstacles);
 
-    predicted_robot_state = dwa.motion_predict(predicted_robot_state, vel, dt);
+    predicted_robot_state = dwa.predict_motion(predicted_robot_state, vel, dt);
     resulting_search_space = dwa.update_search_space(predicted_robot_state, min(robot.scan_data), acc);
-    // vel = dwa.maximizing_objective_function(
-    //   predicted_robot_state,
-    //   dynamic_window,
-    //   [goal_pose[0], goal_pose[1], goal_pose[4]],
-    //   robot.scan_data);
+    dwa.maximizing_objective_function(
+      predicted_robot_state,
+      resulting_search_space,
+      [goal_pose[0], goal_pose[1], goal_pose[4]],
+      robot.scan_data);
 
     robot.odom_update(vel[0], vel[1], acc[0], acc[1], dt);
     robot.draw();
@@ -140,24 +140,40 @@ function keyPressed()
   acc[0] = limit_lin_acc;
   acc[1] = limit_ang_acc;
 
-  let lin_vel_step = 2.5;
-  let ang_vel_step = 0.025;
+  let lin_vel_step = 3.0;
+  let ang_vel_step = 0.1;
 
   if (key == 'w')
   {
     lin_vel = lin_vel + lin_vel_step;
+    if (lin_vel >= max_lin_vel)
+    {
+      lin_vel = max_lin_vel;
+    }
   }
   else if (key == 'x')
   {
     lin_vel = lin_vel - lin_vel_step;
+    if (lin_vel <= min_lin_vel)
+    {
+      lin_vel = min_lin_vel;
+    }
   }
   else if (key == 'a')
   {
     ang_vel = ang_vel - ang_vel_step;
+    if (ang_vel <= min_ang_vel)
+    {
+      ang_vel = min_ang_vel;
+    }
   }
   else if (key == 'd')
   {
     ang_vel = ang_vel + ang_vel_step;
+    if (ang_vel >= max_ang_vel)
+    {
+      ang_vel = max_ang_vel;
+    }
   }
   else if (key == 's')
   {
@@ -187,9 +203,23 @@ function mousePressed()
 
     // re-initialization
     robot = new Robot(robot_radius, x_in, y_in, theta_in, scan_range, scan_offset, scan_dist);
+    dwa = new DWA(
+      max_lin_vel,
+      min_lin_vel,
+      max_ang_vel,
+      min_ang_vel,
+      limit_lin_acc,
+      limit_ang_acc,
+      vx_samples,
+      vth_samples,
+      sim_time,
+      dt,
+      heading_cost_gain,
+      velocity_cost_gain,
+      clearance_cost_gain);
 
     vel = [0.0, 0.0];
-    acc = [0.0, 0.0];
+    acc = [limit_lin_acc, limit_ang_acc];
 
     predicted_robot_state = [x_in, y_in, theta_in, vel[0], vel[1]];
 
