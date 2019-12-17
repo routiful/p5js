@@ -11,9 +11,9 @@ class DWA
     vth_samples,
     sim_time,
     dt,
-    heading_cost_gain,
-    velocity_cost_gain,
-    clearance_cost_gain)
+    heading_bias,
+    velocity_bias,
+    clearance_bias)
   {
     this.max_lin_vel = max_lin_vel;
     this.min_lin_vel = min_lin_vel;
@@ -30,11 +30,11 @@ class DWA
     this.sim_time = sim_time;
     this.dt = dt;
 
-    this.heading_cost_gain = heading_cost_gain;
-    this.velocity_cost_gain = velocity_cost_gain;
-    this.clearance_cost_gain = clearance_cost_gain;
+    this.heading_bias = heading_bias;
+    this.velocity_bias = velocity_bias;
+    this.clearance_bias = clearance_bias;
 
-    this.all_computed_trajectory = [];
+    // this.all_computed_trajectory = [];
   }
 
   predict_motion(state, input, dt)
@@ -106,11 +106,11 @@ class DWA
         //   point(predicted_trajectory[0], predicted_trajectory[1]);
         // }
 
-        // let a = this.heading_cost_gain * heading();
-        // let b = this.velocity_cost_gain * velocity();
-        // let c = this.clearance_cost_gain * clearance();
+        let heading_cost = this.heading_bias * this.heading(predicted_trajectory, goal_pose);
+        // let velocity_cost = this.velocity_bias * this.velocity();
+        // let clearance_cost = this.clearance_bias * this.clearance();
 
-        // let cost_sum = a + b + c;
+        // let cost_sum = heading_cost + velocity_cost + clearance_cost;
 
         // if (max_cost <= cost_sum)
         // {
@@ -120,15 +120,12 @@ class DWA
         // }
       }
     }
-
-    let a;
-
     // return [lin_vel, ang_vel];
   }
 
   predict_trajectory(state, vx, vth)
   {
-    let trajectory = [[]];
+    let trajectory = [];
     trajectory[0] = state;
 
     for (let t = 0.0, i = 0; t <= this.sim_time; t += this.dt, i += 1)
@@ -139,9 +136,23 @@ class DWA
     return trajectory;
   }
 
-  heading()
+  heading(trajectory, goal_pose)
   {
+    let cost = 0.0;
+    let error = [];
 
+    for (let i = 0; i < trajectory.length; i++)
+    {
+      error[i] = normalize_angle(goal_pose[2] - trajectory[i][2]);
+    }
+
+    let min = error.reduce(function(previous, current)
+      {
+        return previous > current ? current : previous;
+      });
+
+    cost = map(min, -Math.PI, Math.PI, 0.0, 1.0);
+    return cost;
   }
 
   clearance()
