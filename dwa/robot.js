@@ -240,6 +240,5 @@ class Robot
     stroke(255, 0, 255);
     strokeWeight(2);
     line(this.x, this.y, this.x + cos(this.theta) * this.radius, this.y + sin(this.theta) * this.radius);
-
   }
 }
