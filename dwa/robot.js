@@ -25,7 +25,7 @@ class Robot
     this.lin_acc = lin_acc;
     this.ang_acc = ang_acc;
 
-    let epsilon = 0.0001;
+    let epsilon = 0.000000001;
     if (lin_vel - this.lin_vel > epsilon)
     {
       this.lin_vel = this.lin_vel + this.lin_acc;
