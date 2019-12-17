@@ -7,10 +7,10 @@ class DWA
     min_ang_vel,
     limit_lin_acc,
     limit_ang_acc,
-    v_reso,
-    yawrate_reso,
+    vx_samples,
+    vth_samples,
+    sim_time,
     dt,
-    predict_time,
     heading_cost_gain,
     velocity_cost_gain,
     clearance_cost_gain)
@@ -24,34 +24,36 @@ class DWA
     this.limit_lin_acc = limit_lin_acc;
     this.limit_ang_acc = limit_ang_acc;
 
-    this.v_reso = v_reso;
-    this.yawrate_reso = yawrate_reso;
+    this.vx_samples = vx_samples;
+    this.vth_samples = vth_samples;
 
+    this.sim_time = sim_time;
     this.dt = dt;
-    this.predict_time = predict_time;
 
     this.heading_cost_gain = heading_cost_gain;
     this.velocity_cost_gain = velocity_cost_gain;
     this.clearance_cost_gain = clearance_cost_gain;
 
-    this.goal_trajectory = [];
+    this.all_computed_trajectory = [];
   }
 
-  motion_predict(state, input, dt)
+  predict_motion(state, input, dt)
   {
     // state[] : x_pos, y_pos, theta, lin_vel, ang_vel
     // input[] : lin_vel, ang_vel
-    // dt : control period time
 
-    state[2] += input[1] * dt;
+    let delta_s = input[0] * dt;
+    let delta_theta = input[1] * dt;
 
-    state[0] += input[0] * dt * cos(state[2]);
-    state[1] += input[0] * dt * sin(state[2]);
+    state[0] += delta_s * cos(state[2] + (delta_theta / 2.0));
+    state[1] += delta_s * sin(state[2] + (delta_theta / 2.0));
+    state[2] += delta_theta;
+    state[2] = normalize_angle(state[2]);
 
     state[3] = input[0];
     state[4] = input[1];
 
-    return state;
+    return new Array(state[0], state[1], state[2], state[3], state[4]);
   }
 
   update_search_space(state, closest_obstacle_dist, acc)
@@ -83,17 +85,58 @@ class DWA
     return Vr;
   }
 
-  maximizing_objective_function(state, dt, Vr, goal_pose, scan_data)
+  maximizing_objective_function(state, Vr, goal_pose, scan_data)
   {
     let lin_vel;
     let ang_vel;
 
-    let min_cost = Infinity;
+    let max_cost = 0.0;
 
-    // for (let i = 0; i < )
+    for (let dvx = Vr[0]; dvx <= Vr[1]; dvx += ((Vr[1] - Vr[0]) / this.vx_samples))
+    {
+      for (let dvth = Vr[2]; dvth <= Vr[3]; dvth += ((Vr[3] - Vr[2]) / this.vth_samples))
+      {
+        let predicted_trajectory = this.predict_trajectory(state, dvx, dvth);
+        // this.all_computed_trajectory.push(predicted_trajectory);
 
+        // for (let i = 0; i < predicted_trajectory.length; i++)
+        // {
+        //   stroke(0);
+        //   strokeWeight(3);
+        //   point(predicted_trajectory[0], predicted_trajectory[1]);
+        // }
 
-    return [lin_vel, ang_vel];
+        // let a = this.heading_cost_gain * heading();
+        // let b = this.velocity_cost_gain * velocity();
+        // let c = this.clearance_cost_gain * clearance();
+
+        // let cost_sum = a + b + c;
+
+        // if (max_cost <= cost_sum)
+        // {
+        //   max_cost = cost_sum;
+        //   lin_vel = dvx;
+        //   ang_vel = dvth;
+        // }
+      }
+    }
+
+    let a;
+
+    // return [lin_vel, ang_vel];
+  }
+
+  predict_trajectory(state, vx, vth)
+  {
+    let trajectory = [[]];
+    trajectory[0] = state;
+
+    for (let t = 0.0, i = 0; t <= this.sim_time; t += this.dt, i += 1)
+    {
+      trajectory[i+1] = this.predict_motion(trajectory[i], [vx, vth], this.dt);
+    }
+
+    return trajectory;
   }
 
   heading()
