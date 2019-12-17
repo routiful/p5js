@@ -54,7 +54,7 @@ class DWA
     return state;
   }
 
-  update_search_space(state, closest_obstacle_dist)
+  update_search_space(state, closest_obstacle_dist, acc)
   {
     // update possible velocity
     let Vs = [this.min_lin_vel, this.max_lin_vel, this.min_ang_vel, this.max_ang_vel];
@@ -62,16 +62,16 @@ class DWA
     // update admissible velocity
     let Va = [
       this.min_lin_vel,
-      sqrt(2 * closest_obstacle_dist * this.limit_lin_acc),
+      sqrt(2 * closest_obstacle_dist * acc[0]),
       this.min_ang_vel,
-      sqrt(2 * closest_obstacle_dist * this.limit_ang_acc)];
+      sqrt(2 * closest_obstacle_dist * acc[1])];
 
     // update dynamic window velocity
     let Vd = [
-      state[3] - this.limit_lin_acc * this.dt,
-      state[3] + this.limit_lin_acc * this.dt,
-      state[4] - this.limit_ang_acc * this.dt,
-      state[4] + this.limit_ang_acc * this.dt];
+      state[3] - acc[0] * this.dt,
+      state[3] + acc[0] * this.dt,
+      state[4] - acc[1] * this.dt,
+      state[4] + acc[1] * this.dt];
 
     // update resulting velocity
     let Vr = [

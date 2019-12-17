@@ -94,7 +94,7 @@ function draw()
     robot.scan_update(obstacles);
 
     predicted_robot_state = dwa.motion_predict(predicted_robot_state, vel, dt);
-    resulting_search_space = dwa.update_search_space(predicted_robot_state, min(robot.scan_data));
+    resulting_search_space = dwa.update_search_space(predicted_robot_state, min(robot.scan_data), acc);
     // vel = dwa.maximizing_objective_function(
     //   predicted_robot_state,
     //   dynamic_window,
