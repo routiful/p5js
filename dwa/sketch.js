@@ -10,11 +10,11 @@ let scan_offset = radians(10.0);
 let scan_dist = 100.0;
 
 // dwa config
-let max_lin_vel = 10.0;
+let max_lin_vel = 20.0;
 let min_lin_vel = 0.0;
 
-let max_ang_vel = 0.5;
-let min_ang_vel = -0.5;
+let max_ang_vel = 1.0;
+let min_ang_vel = -1.0;
 
 let limit_lin_acc = 1.0;
 let limit_ang_acc = 0.025;
@@ -25,9 +25,9 @@ let vth_samples = 5;
 let dt = 0.050; // sec
 let sim_time = 1.0; //sec
 
-let heading_cost_gain = 1.0;
-let velocity_cost_gain = 1.0;
-let clearance_cost_gain = 1.0;
+let heading_bias = 1.0;
+let velocity_bias = 1.0;
+let clearance_bias = 1.0;
 
 // initialization
 let axis;
@@ -62,9 +62,9 @@ function setup()
     vth_samples,
     sim_time,
     dt,
-    heading_cost_gain,
-    velocity_cost_gain,
-    clearance_cost_gain);
+    heading_bias,
+    velocity_bias,
+    clearance_bias);
 
   obstacles[0] = new Obstacle(55, 160, 116, 141, 120, 210, 49, 204);
   obstacles[1] = new Obstacle(155, 274, 253, 279, 216, 360, 144, 360);
@@ -214,9 +214,9 @@ function mousePressed()
       vth_samples,
       sim_time,
       dt,
-      heading_cost_gain,
-      velocity_cost_gain,
-      clearance_cost_gain);
+      heading_bias,
+      velocity_bias,
+      clearance_bias);
 
     vel = [0.0, 0.0];
     acc = [limit_lin_acc, limit_ang_acc];
