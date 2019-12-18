@@ -76,3 +76,23 @@ function normalize_angle(angle)
   return a;
 }
 
+// function get_min(arr)
+// {
+//   let min = arr.reduce(function(previous, current)
+//     {
+//       return previous > current ? current : previous;
+//     });
+
+//   return min;
+// }
+
+// function get_max(arr)
+// {
+//   let max = arr.reduce(function(previous, current)
+//     {
+//       return previous > current ? previous : current;
+//     });
+
+//   return max;
+// }
+
