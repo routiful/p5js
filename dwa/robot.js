@@ -200,9 +200,7 @@ class Robot
           height
         ));
 
-      // console.log('min_obstacle_dist[' + min_obstacle_dist.length + ']: ' + min_obstacle_dist);
       this.scan_data[cnt] = min(min_obstacle_dist);
-      // console.log('scan_data[' + cnt + ']: ' + this.scan_data[cnt]);
       cnt++;
     }
   }
