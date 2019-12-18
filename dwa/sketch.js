@@ -42,8 +42,8 @@ let vel = [0.0, 0.0];
 let acc = [limit_lin_acc, limit_ang_acc];
 
 let predicted_robot_state = [x_in, y_in, theta_in, vel[0], vel[1]];
-let goal_pose = [];
-let resulting_search_space = [];
+let goal_pose = [0.0, 0.0, 0.0];
+let resulting_search_space = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
 
 function setup()
 {
@@ -94,7 +94,7 @@ function draw()
     robot.scan_update(obstacles);
 
     predicted_robot_state = dwa.predict_motion(predicted_robot_state, vel, dt);
-    resulting_search_space = dwa.update_search_space(predicted_robot_state, min(robot.scan_data), acc);
+    resulting_search_space = dwa.update_search_space(predicted_robot_state, robot.scan_data, robot.scan_range, robot.scan_offset, acc);
     dwa.maximizing_objective_function(
       predicted_robot_state,
       resulting_search_space,
