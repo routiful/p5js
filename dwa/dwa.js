@@ -42,38 +42,92 @@ class DWA
     // state[] : x_pos, y_pos, theta, lin_vel, ang_vel
     // input[] : lin_vel, ang_vel
 
+    let get_state = state.slice(); // Deep copy
+
     let delta_s = input[0] * dt;
     let delta_theta = input[1] * dt;
 
-    state[0] += delta_s * cos(state[2] + (delta_theta / 2.0));
-    state[1] += delta_s * sin(state[2] + (delta_theta / 2.0));
-    state[2] += delta_theta;
-    state[2] = normalize_angle(state[2]);
+    get_state[0] += delta_s * cos(get_state[2] + (delta_theta / 2.0));
+    get_state[1] += delta_s * sin(get_state[2] + (delta_theta / 2.0));
+    get_state[2] += delta_theta;
+    get_state[2] = normalize_angle(get_state[2]);
 
-    state[3] = input[0];
-    state[4] = input[1];
+    get_state[3] = input[0];
+    get_state[4] = input[1];
 
-    return new Array(state[0], state[1], state[2], state[3], state[4]);
+    return get_state;
   }
 
-  update_search_space(state, closest_obstacle_dist, acc)
+  update_search_space(state, scan_data, scan_range, scan_offset, acc)
   {
     // update possible velocity
     let Vs = [this.min_lin_vel, this.max_lin_vel, this.min_ang_vel, this.max_ang_vel];
 
     // update admissible velocity
-    let Va = [
+    let radius_circular_trajectory = state[3] / state[4];
+    let closest_obstacle_dist = [];
+    let closest_circular_trajectory = 0.0;
+
+    let Va = [];
+    if (state[4] > 0.0)
+    {
+      for (let i = parseInt(scan_data.length / 2); i < scan_data.length; i++)
+      {
+        if (scan_data[i] <= radius_circular_trajectory)
+        {
+          closest_obstacle_dist.push(scan_data[i]);
+        }
+        else
+        {
+          Va = [
+            this.min_lin_vel,
+            sqrt(2 * radius_circular_trajectory * acc[0]),
+            state[4],
+            this.max_ang_vel];
+        }
+      }
+    }
+    else if (state[4] < 0.0)
+    {
+      for (let i = 0; i < parseInt(scan_data.length / 2); i++)
+      {
+        if (scan_data[i] <= radius_circular_trajectory)
+        {
+          closest_obstacle_dist.push(scan_data[i]);
+        }
+        else
+        {
+          Va = [
+            this.min_lin_vel,
+            sqrt(2 * radius_circular_trajectory * acc[0]),
+            this.min_ang_vel,
+            state[4]];
+        }
+      }
+    }
+    // else
+    // {
+    //   Va = [
+    //     this.min_lin_vel,
+    //     sqrt(2 * radius_circular_trajectory * acc[0]),
+    //     this.min_ang_vel,
+    //     state[4]];
+    // }
+
+    closest_circular_trajectory = radius_circular_trajectory * (scan_range[0] + scan_data.indexOf(min(closest_obstacle_dist)));
+
+    Va = [
       this.min_lin_vel,
-      sqrt(2 * closest_obstacle_dist * acc[0]),
+      sqrt(2 * closest_circular_trajectory * acc[0]),
       this.min_ang_vel,
-      sqrt(2 * closest_obstacle_dist * acc[1])];
+      sqrt(2 * closest_circular_trajectory * acc[1])];
 
     // update dynamic window velocity
     let Vd = [
-      state[3] - acc[0] * this.dt,
-      state[3] + acc[0] * this.dt,
-      state[4] - acc[1] * this.dt,
-      state[4] + acc[1] * this.dt];
+      state[3] - this.limit_lin_acc * this.dt,
+      state[3] + this.limit_lin_acc * this.dt,
+      state[4] - this.limit_ang_acc * this.dt,
+      state[4] + this.limit_ang_acc * this.dt];
 
     // update resulting velocity
     let Vr = [
@@ -107,8 +161,8 @@ class DWA
         // }
 
         let heading_cost = this.heading_bias * this.heading(predicted_trajectory, goal_pose);
-        // let velocity_cost = this.velocity_bias * this.velocity();
-        // let clearance_cost = this.clearance_bias * this.clearance();
+        let velocity_cost = this.velocity_bias * this.velocity(predicted_trajectory);
+        // let clearance_cost = this.clearance_bias * this.clearance(predicted_trajectory, scan_data);
 
         // let cost_sum = heading_cost + velocity_cost + clearance_cost;
 
@@ -130,7 +184,7 @@ class DWA
 
     for (let t = 0.0, i = 0; t <= this.sim_time; t += this.dt, i += 1)
     {
-      trajectory[i+1] = this.predict_motion(trajectory[i], [vx, vth], this.dt);
+      trajectory.push(this.predict_motion(trajectory[i], [vx, vth], this.dt));
     }
 
     return trajectory;
@@ -143,15 +197,10 @@ class DWA
 
     for (let i = 0; i < trajectory.length; i++)
     {
-      error[i] = normalize_angle(goal_pose[2] - trajectory[i][2]);
+      error[i] = abs(normalize_angle(goal_pose[2] - trajectory[i][2]));
     }
 
-    let min = error.reduce(function(previous, current)
-      {
-        return previous > current ? current : previous;
-      });
-
-    cost = map(min, -Math.PI, Math.PI, 0.0, 1.0);
+    cost = map(Math.min.apply(null, error), 0.0, Math.PI, 1.0, 0.0);
     return cost;
   }
 
@@ -160,8 +209,17 @@ class DWA
 
   }
 
-  velocity()
+  velocity(trajectory)
   {
+    let cost = 0.0;
+    let error = [];
 
+    for (let i = 0; i < trajectory.length; i++)
+    {
+      error[i] = abs(this.max_lin_vel - trajectory[i][3]);
+    }
+
+    cost = map(Math.min.apply(null, error), 0.0, this.max_lin_vel, 1.0, 0.0);
+    return cost;
   }
 }
