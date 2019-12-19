@@ -58,69 +58,75 @@ class DWA
     return get_state;
   }
 
-  update_search_space(state, scan_data, scan_range, scan_offset, acc)
+  update_search_space(state)
   {
     // update possible velocity
     let Vs = [this.min_lin_vel, this.max_lin_vel, this.min_ang_vel, this.max_ang_vel];
 
     // update admissible velocity
-    let radius_circular_trajectory = state[3] / state[4];
-    let closest_obstacle_dist = [];
-    let closest_circular_trajectory = 0.0;
+    // let Va = [];
+    // let check_scan_data = false;
+    // let check_obstacles = false;
+    // let radius_circular_trajectory = 0.0;
+    // let theta_circular_trajectory = 0.0;
+    // let circular_trajectory = 0.0;
 
-    let Va = [];
-    if (state[4] > 0.0)
-    {
-      for (let i = parseInt(scan_data.length / 2); i < scan_data.length; i++)
-      {
-        if (scan_data[i] <= radius_circular_trajectory)
-        {
-          closest_obstacle_dist.push(scan_data[i]);
-        }
-        else
-        {
-          Va = [
-            this.min_lin_vel,
-            sqrt(2 * radius_circular_trajectory * acc[0]),
-            state[4],
-            this.max_ang_vel];
-        }
-      }
-    }
-    else if (state[4] < 0.0)
-    {
-      for (let i = 0; i < parseInt(scan_data.length / 2); i++)
-      {
-        if (scan_data[i] <= radius_circular_trajectory)
-        {
-          closest_obstacle_dist.push(scan_data[i]);
-        }
-        else
-        {
-          Va = [
-            this.min_lin_vel,
-            sqrt(2 * radius_circular_trajectory * acc[0]),
-            this.min_ang_vel,
-            state[4]];
-        }
-      }
-    }
-    // else
+    // for (let i = 0; i < scan_data.length; i++)
+    // {
+    //   if (scan_data[i] < scan_dist)
+    //   {
+    //     check_scan_data = true;
+    //   }
+    // }
+
+    // if (check_scan_data == false)
     // {
     //   Va = [
     //     this.min_lin_vel,
-    //     sqrt(2 * radius_circular_trajectory * acc[0]),
+    //     this.max_lin_vel,
     //     this.min_ang_vel,
-    //     state[4]];
+    //     this.max_ang_vel];
     // }
+    // else
+    // {
+      // if (state[4] == 0.0)
+      // {
+      //   radius_circular_trajectory = scan_dist;
+      //   theta_circular_trajectory = 1.0;
+      // }
+      // else
+      // {
+      //   radius_circular_trajectory = state[3] / state[4];
+      //   theta_circular_trajectory = state[4] * this.dt;
+      // }
 
-    closest_circular_trajectory = radius_circular_trajectory * (scan_range[0] + scan_data.indexOf(min(closest_obstacle_dist)));
+      // circular_trajectory = radius_circular_trajectory * theta_circular_trajectory;
 
-    Va = [
-      this.min_lin_vel,
-      sqrt(2 * closest_circular_trajectory * acc[0]),
-      this.min_ang_vel,
-      sqrt(2 * closest_circular_trajectory * acc[1])];
+      // for (let i = 0; i < scan_data.length; i++)
+      // {
+      //   if (scan_data[i] <= circular_trajectory)
+      //   {
+      //     check_obstacles = true;
+      //   }
+      // }
+
+      // if (check_obstacles == true)
+      // {
+      //   Va = [
+      //     this.min_lin_vel,
+      //     sqrt(2 * circular_trajectory * acc[0]),
+      //     -1.0 * sqrt(2 * circular_trajectory * acc[1]),
+      //     sqrt(2 * circular_trajectory * acc[1])];
+      // }
+      // else
+      // {
+      //   Va = [
+      //     this.min_lin_vel,
+      //     this.max_lin_vel,
+      //     this.min_ang_vel,
+      //     this.max_ang_vel];
+      // }
+    // }
 
     // update dynamic window velocity
     let Vd = [
@@ -131,24 +137,29 @@ class DWA
 
     // update resulting velocity
     let Vr = [
-      max(Vd[0], max(Vs[0], Va[0])),
-      min(Vd[1], min(Vs[1], Va[1])),
-      max(Vd[2], max(Vs[2], Va[2])),
-      min(Vd[3], min(Vs[3], Va[3]))];
+      max(Vd[0], Vs[0]),
+      min(Vd[1], Vs[1]),
+      max(Vd[2], Vs[2]),
+      min(Vd[3], Vs[3])];
+    // let Vr = [
+    //   max(Vd[0], max(Vs[0], Va[0])),
+    //   min(Vd[1], min(Vs[1], Va[1])),
+    //   max(Vd[2], max(Vs[2], Va[2])),
+    //   min(Vd[3], min(Vs[3], Va[3]))];
 
     return Vr;
   }
 
-  maximizing_objective_function(state, Vr, goal_pose, scan_data)
+  maximizing_objective_function(state, Vr, goal_pose, scan_data, scan_offset)
   {
     let lin_vel;
     let ang_vel;
 
-    let max_cost = 0.0;
+    let cost_sum = [];
 
-    for (let dvx = Vr[0]; dvx <= Vr[1]; dvx += ((Vr[1] - Vr[0]) / this.vx_samples))
+    for (let dvx = Vr[0], i = 0; dvx <= Vr[1]; dvx += ((Vr[1] - Vr[0]) / this.vx_samples), i++)
     {
-      for (let dvth = Vr[2]; dvth <= Vr[3]; dvth += ((Vr[3] - Vr[2]) / this.vth_samples))
+      for (let dvth = Vr[2], j = 0; dvth <= Vr[3]; dvth += ((Vr[3] - Vr[2]) / this.vth_samples), j++)
       {
         let predicted_trajectory = this.predict_trajectory(state, dvx, dvth);
         // this.all_computed_trajectory.push(predicted_trajectory);
@@ -162,9 +173,14 @@ class DWA
 
         let heading_cost = this.heading_bias * this.heading(predicted_trajectory, goal_pose);
         let velocity_cost = this.velocity_bias * this.velocity(predicted_trajectory);
-        // let clearance_cost = this.clearance_bias * this.clearance(predicted_trajectory, scan_data);
+        let clearance_cost = this.clearance_bias * this.clearance(predicted_trajectory, scan_data, scan_offset);
 
-        // let cost_sum = heading_cost + velocity_cost + clearance_cost;
+        for (let k = 0; k < predicted_trajectory.length; k++)
+        {
+          cost_sum[i][j] = heading_cost[k] + velocity_cost[k] + clearance_cost[k];
+        }
+
+        // max_cost = max(cost_sum);
 
         // if (max_cost <= cost_sum)
         // {
@@ -174,6 +190,8 @@ class DWA
         // }
       }
     }
+
+    let max_cost = cost_sum.indexOf(max(cost_sum));
     // return [lin_vel, ang_vel];
   }
 
@@ -192,34 +210,59 @@ class DWA
 
   heading(trajectory, goal_pose)
   {
-    let cost = 0.0;
-    let error = [];
+    let cost = [];
 
     for (let i = 0; i < trajectory.length; i++)
     {
-      error[i] = abs(normalize_angle(goal_pose[2] - trajectory[i][2]));
+      let error = abs(normalize_angle(goal_pose[2] - trajectory[i][2]));
+      cost[i] = map(error, 0.0, Math.PI, 1.0, 0.0);
     }
 
-    cost = map(Math.min.apply(null, error), 0.0, Math.PI, 1.0, 0.0);
     return cost;
-  }
-
-  clearance()
-  {
-
   }
 
   velocity(trajectory)
   {
-    let cost = 0.0;
-    let error = [];
+    let cost = [];
 
     for (let i = 0; i < trajectory.length; i++)
     {
-      error[i] = abs(this.max_lin_vel - trajectory[i][3]);
+      let error = abs(this.max_lin_vel - trajectory[i][3]);
+      cost[i] = map(error, 0.0, this.max_lin_vel, 1.0, 0.0);
     }
 
-    cost = map(Math.min.apply(null, error), 0.0, this.max_lin_vel, 1.0, 0.0);
+    return cost;
+  }
+
+  clearance(trajectory, scan_data, scan_offset)
+  {
+    let cost = [];
+    let point_cloud = [];
+    let i = 0;
+    let j = 0;
+
+    for (i = 0; i < scan_data.length; i++)
+    {
+      point_cloud[i][0] = scan_data[i] * cos(Math.PI - scan_offset);
+      point_cloud[i][1] = scan_data[i] * sin(Math.PI - scan_offset);
+    }
+
+    for (i = 0; i < trajectory.length; i++)
+    {
+      cost[i] = 0.0;
+    }
+
+    for (i = 0; i < trajectory.length; i++)
+    {
+      for (j = 0; j < scan_data.length; j++)
+      {
+        if (trajectory[i][0] == point_cloud[j][0] && trajectory[i][1] == point_cloud[j][1])
+        {
+          cost[i] = 1.0;
+        }
+      }
+    }
+
     return cost;
   }
 }
