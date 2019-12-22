@@ -2,8 +2,6 @@ function Axis()
 {
   this.show = function(x, y)
   {
-    background(255);
-
     for (let i = 0, k = 0; i < x; i = i + 10, k++)
     {
       stroke(0);
@@ -48,7 +46,7 @@ function Axis()
 
 function radians(deg)
 {
-  return deg * Math.PI / 180;
+  return deg * (Math.PI / 180);
 }
 
 // ref) https://github.com/ros/angles/blob/master/angles/include/angles/angles.h
@@ -75,24 +73,3 @@ function normalize_angle(angle)
 
   return a;
 }
-
-// function get_min(arr)
-// {
-//   let min = arr.reduce(function(previous, current)
-//     {
-//       return previous > current ? current : previous;
-//     });
-
-//   return min;
-// }
-
-// function get_max(arr)
-// {
-//   let max = arr.reduce(function(previous, current)
-//     {
-//       return previous > current ? previous : current;
-//     });
-
-//   return max;
-// }
-
