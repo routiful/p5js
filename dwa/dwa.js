@@ -150,45 +150,35 @@ class DWA
     return Vr;
   }
 
-  maximizing_objective_function(state, Vr, goal_pose, scan_data, scan_offset)
+  maximizing_objective_function(state, Vr, goal_pose, scan_data, scan_range, scan_offset)
   {
     let lin_vel;
     let ang_vel;
 
-    let cost_sum = 0.0;
+    let max_cost = 0.0;
 
     for (let dvx = Vr[0], i = 0; dvx <= Vr[1]; dvx += ((Vr[1] - Vr[0]) / this.vx_samples), i++)
     {
       for (let dvth = Vr[2], j = 0; dvth <= Vr[3]; dvth += ((Vr[3] - Vr[2]) / this.vth_samples), j++)
       {
         let predicted_trajectory = this.predict_trajectory(state, dvx, dvth);
-        // this.all_computed_trajectory.push(predicted_trajectory);
-
-        // for (let i = 0; i < predicted_trajectory.length; i++)
-        // {
-        //   stroke(0);
-        //   strokeWeight(3);
-        //   point(predicted_trajectory[0], predicted_trajectory[1]);
-        // }
 
         let heading_cost = this.heading_bias * this.heading(predicted_trajectory, goal_pose);
         let velocity_cost = this.velocity_bias * this.velocity(predicted_trajectory);
-        let clearance_cost = this.clearance_bias * this.clearance(predicted_trajectory, scan_data, scan_offset);
+        let clearance_cost = this.clearance_bias * this.clearance(predicted_trajectory, scan_range, scan_data, scan_offset);
 
-        cost_sum = heading_cost + velocity_cost + clearance_cost;
+        let cost_sum = heading_cost + velocity_cost + clearance_cost;
 
-        // max_cost = max(cost_sum);
-
-        // if (max_cost <= cost_sum)
-        // {
-        //   max_cost = cost_sum;
-        //   lin_vel = dvx;
-        //   ang_vel = dvth;
-        // }
+        if (max_cost <= cost_sum)
+        {
+          max_cost = cost_sum;
+          lin_vel = dvx;
+          ang_vel = dvth;
+        }
       }
     }
 
-    // return [lin_vel, ang_vel];
+    return [lin_vel, ang_vel];
   }
 
   predict_trajectory(state, vx, vth)
@@ -220,7 +210,7 @@ class DWA
     return cost;
   }
 
-  clearance(trajectory, scan_data, scan_offset)
+  clearance(trajectory, scan_data, scan_range, scan_offset)
   {
     let cost = 0.0;
     let x = 0.0;
@@ -228,11 +218,17 @@ class DWA
 
     for (let i = 0; i < scan_data.length; i++)
     {
-      x = scan_data[i] * cos(scan_offset * i + trajectory[0][2]);// + trajectory[0][0];
-      y = scan_data[i] * sin(scan_offset * i + trajectory[0][2]);// + trajectory[0][1];
+      x = scan_data[i] *
+        cos((scan_range[0] + scan_offset * i) + trajectory[trajectory.length - 1][2]) +
+        trajectory[trajectory.length - 1][0];
 
-      if (trajectory[trajectory.length - 1][0] == x &&
-        trajectory[trajectory.length - 1][1] == y)
+      y = scan_data[i] *
+      sin((scan_range[0] + scan_offset * i) + trajectory[trajectory.length - 1][2]) +
+      trajectory[trajectory.length - 1][1];
+
+      let diff = 1.0;
+      if ((abs(trajectory[trajectory.length - 1][0] - x) < diff) &&
+        (abs(trajectory[trajectory.length - 1][1] - y) < diff))
       {
         cost = 1.0;
       }
