@@ -25,9 +25,9 @@ let vth_samples = 5;
 let dt = 0.050; // sec
 let sim_time = 1.0; //sec
 
-let heading_bias = 1.0;
-let velocity_bias = 1.0;
-let clearance_bias = 1.0;
+let heading_bias = 0.5;
+let velocity_bias = 0.5;
+let clearance_bias = 0.5;
 
 // initialization
 let axis;
@@ -97,11 +97,12 @@ function draw()
 
     predicted_robot_state = dwa.predict_motion(predicted_robot_state, vel, dt);
     resulting_search_space = dwa.update_search_space(predicted_robot_state);
-    dwa.maximizing_objective_function(
+    vel = dwa.maximizing_objective_function(
       predicted_robot_state,
       resulting_search_space,
       [goal_pose[0], goal_pose[1], goal_pose[4]],
       robot.scan_data,
+      robot.scan_range,
       robot.scan_offset);
 
     robot.odom_update(vel[0], vel[1], acc[0], acc[1], dt);
