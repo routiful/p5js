@@ -155,7 +155,7 @@ class DWA
     let lin_vel;
     let ang_vel;
 
-    let cost_sum = [];
+    let cost_sum = 0.0;
 
     for (let dvx = Vr[0], i = 0; dvx <= Vr[1]; dvx += ((Vr[1] - Vr[0]) / this.vx_samples), i++)
     {
@@ -175,10 +175,7 @@ class DWA
         let velocity_cost = this.velocity_bias * this.velocity(predicted_trajectory);
         let clearance_cost = this.clearance_bias * this.clearance(predicted_trajectory, scan_data, scan_offset);
 
-        for (let k = 0; k < predicted_trajectory.length; k++)
-        {
-          cost_sum[i][j] = heading_cost[k] + velocity_cost[k] + clearance_cost[k];
-        }
+        cost_sum = heading_cost + velocity_cost + clearance_cost;
 
         // max_cost = max(cost_sum);
 
@@ -191,7 +188,6 @@ class DWA
       }
     }
 
-    let max_cost = cost_sum.indexOf(max(cost_sum));
     // return [lin_vel, ang_vel];
   }
 
@@ -210,56 +206,35 @@ class DWA
 
   heading(trajectory, goal_pose)
   {
-    let cost = [];
-
-    for (let i = 0; i < trajectory.length; i++)
-    {
-      let error = abs(normalize_angle(goal_pose[2] - trajectory[i][2]));
-      cost[i] = map(error, 0.0, Math.PI, 1.0, 0.0);
-    }
+    let error = abs(normalize_angle(goal_pose[2] - trajectory[trajectory.length - 1][2]));
+    let cost = map(error, 0.0, Math.PI, 1.0, 0.0);
 
     return cost;
   }
 
   velocity(trajectory)
   {
-    let cost = [];
-
-    for (let i = 0; i < trajectory.length; i++)
-    {
-      let error = abs(this.max_lin_vel - trajectory[i][3]);
-      cost[i] = map(error, 0.0, this.max_lin_vel, 1.0, 0.0);
-    }
+    let error = abs(this.max_lin_vel - trajectory[trajectory.length - 1][3]);
+    let cost = map(error, 0.0, this.max_lin_vel, 1.0, 0.0);
 
     return cost;
   }
 
   clearance(trajectory, scan_data, scan_offset)
   {
-    let cost = [];
-    let point_cloud = [];
-    let i = 0;
-    let j = 0;
+    let cost = 0.0;
+    let x = 0.0;
+    let y = 0.0;
 
-    for (i = 0; i < scan_data.length; i++)
+    for (let i = 0; i < scan_data.length; i++)
     {
-      point_cloud[i][0] = scan_data[i] * cos(Math.PI - scan_offset);
-      point_cloud[i][1] = scan_data[i] * sin(Math.PI - scan_offset);
-    }
+      x = scan_data[i] * cos(scan_offset * i + trajectory[0][2]);// + trajectory[0][0];
+      y = scan_data[i] * sin(scan_offset * i + trajectory[0][2]);// + trajectory[0][1];
 
-    for (i = 0; i < trajectory.length; i++)
-    {
-      cost[i] = 0.0;
-    }
-
-    for (i = 0; i < trajectory.length; i++)
-    {
-      for (j = 0; j < scan_data.length; j++)
+      if (trajectory[trajectory.length - 1][0] == x &&
+        trajectory[trajectory.length - 1][1] == y)
       {
-        if (trajectory[i][0] == point_cloud[j][0] && trajectory[i][1] == point_cloud[j][1])
-        {
-          cost[i] = 1.0;
-        }
+        cost = 1.0;
       }
     }
 
