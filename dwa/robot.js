@@ -18,6 +18,11 @@ class Robot
     this.scan_dist = scan_dist;
     this.scan_offset = scan_offset;
     this.scan_data = [];
+
+    for (let i = this.scan_range[0], j = 0; i < this.scan_range[1]; i += this.scan_offset, j++)
+    {
+      this.scan_data[j] = 0.0;
+    }
   }
 
   odom_update(lin_vel, ang_vel, lin_acc, ang_acc, dt)
