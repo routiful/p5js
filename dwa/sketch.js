@@ -79,6 +79,8 @@ function draw()
 {
   if (millis() - t > dt * 1000)
   {
+    angleMode(RADIANS);
+    background(255);
     axis.show(width, height);
 
     stroke(0);
