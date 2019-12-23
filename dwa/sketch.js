@@ -101,6 +101,7 @@ function draw()
       predicted_robot_state,
       resulting_search_space,
       [goal_pose[0], goal_pose[1], goal_pose[4]],
+      robot.radius,
       robot.scan_data,
       robot.scan_range,
       robot.scan_offset);

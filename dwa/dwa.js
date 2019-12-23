@@ -150,7 +150,7 @@ class DWA
     return Vr;
   }
 
-  maximizing_objective_function(state, Vr, goal_pose, scan_data, scan_range, scan_offset)
+  maximizing_objective_function(state, Vr, goal_pose, robot_radius, scan_data, scan_range, scan_offset)
   {
     let lin_vel;
     let ang_vel;
@@ -165,7 +165,7 @@ class DWA
 
         let heading_cost = this.heading_bias * this.heading(predicted_trajectory, goal_pose);
         let velocity_cost = this.velocity_bias * this.velocity(predicted_trajectory);
-        let clearance_cost = this.clearance_bias * this.clearance(predicted_trajectory, scan_range, scan_data, scan_offset);
+        let clearance_cost = this.clearance_bias * this.clearance(predicted_trajectory, robot_radius, scan_range, scan_data, scan_offset);
 
         let cost_sum = heading_cost + velocity_cost + clearance_cost;
 
@@ -210,11 +210,13 @@ class DWA
     return cost;
   }
 
-  clearance(trajectory, scan_data, scan_range, scan_offset)
+  clearance(trajectory, robot_radius, scan_data, scan_range, scan_offset)
   {
     let cost = 0.0;
     let x = 0.0;
     let y = 0.0;
+    let dx = 0.0;
+    let dy = 0.0;
 
     for (let i = 0; i < scan_data.length; i++)
     {
@@ -226,11 +228,12 @@ class DWA
       sin((scan_range[0] + scan_offset * i) + trajectory[trajectory.length - 1][2]) +
       trajectory[trajectory.length - 1][1];
 
-      let diff = 1.0;
-      if ((abs(trajectory[trajectory.length - 1][0] - x) < diff) &&
-        (abs(trajectory[trajectory.length - 1][1] - y) < diff))
+      dx = abs(trajectory[trajectory.length - 1][0] - x);
+      dy = abs(trajectory[trajectory.length - 1][1] - y);
+
+      if (sqrt(pow(dx, 2) + pow(dy, 2)) <= robot_radius)
       {
-        cost = 1.0;
+        return cost = 1.0;
       }
     }
 
