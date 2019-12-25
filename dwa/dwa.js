@@ -181,7 +181,8 @@ class DWA
         let predicted_trajectory = this.predict_trajectory(state, dvx, dvth);
         end_points.push(
           [predicted_trajectory[predicted_trajectory.length - 1][0],
-          predicted_trajectory[predicted_trajectory.length - 1][1]
+          predicted_trajectory[predicted_trajectory.length - 1][1],
+          predicted_trajectory[predicted_trajectory.length - 1][2]
           ]);
 
         heading_cost = this.heading_bias * this.heading(predicted_trajectory, goal_pose);
@@ -201,13 +202,19 @@ class DWA
 
     for (let i = 0; i < end_points.length; i++)
     {
+      push();
       stroke(0);
-      strokeWeight(1);
       ellipse(
         end_points[i][0],
         end_points[i][1],
         5,
         5);
+      line(
+        end_points[i][0],
+        end_points[i][1],
+        end_points[i][0] + cos(end_points[i][2]) * 10,
+        end_points[i][1] + sin(end_points[i][2]) * 10);
+      pop();
     }
 
     return [lin_vel, ang_vel];
@@ -230,17 +237,17 @@ class DWA
   {
     let dx = goal_pose[0] - trajectory[trajectory.length - 1][0];
     let dy = goal_pose[1] - trajectory[trajectory.length - 1][1];
-    let error_angle = normalize_angle(atan2(dy, dx));
-    let cost_angle = error_angle - trajectory[trajectory.length - 1][2];
+    let diff_angle = normalize_angle(atan2(dy, dx));
+    let error_angle = diff_angle - trajectory[trajectory.length - 1][2];
 
     let cost = 0.0;
-    if (cost_angle > 0.0)
+    if (error_angle > 0.0)
     {
-      cost = map(cost_angle, 0.0, Math.PI, 1.0, 0.0);
+      cost = map(error_angle, 0.0, Math.PI, 1.0, 0.0);
     }
-    else if (cost_angle < 0.0)
+    else if (error_angle < 0.0)
     {
-      cost = map(cost_angle, -Math.PI, 0.0, 0.0, 1.0);
+      cost = map(error_angle, -Math.PI, 0.0, 0.0, 1.0);
     }
     else
     {
