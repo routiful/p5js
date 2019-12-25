@@ -65,6 +65,16 @@ class Robot
     this.theta += delta_theta;
 
     this.theta = normalize_angle(this.theta);
+
+    if (this.x <= this.radius)
+    {
+      this.x = this.radius;
+    }
+
+    if (this.y <= this.radius)
+    {
+      this.y = this.radius;
+    }
   }
 
   scan_update(obstacles)
