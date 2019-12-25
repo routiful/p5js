@@ -50,7 +50,18 @@ class DWA
     get_state[0] += delta_s * cos(get_state[2] + (delta_theta / 2.0));
     get_state[1] += delta_s * sin(get_state[2] + (delta_theta / 2.0));
     get_state[2] += delta_theta;
+
     get_state[2] = normalize_angle(get_state[2]);
+
+    if (get_state[0] <= 0.0)
+    {
+      get_state[0] = 0.0;
+    }
+
+    if (get_state[1] <= 0.0)
+    {
+      get_state[1] = 0.0;
+    }
 
     get_state[3] = input[0];
     get_state[4] = input[1];
@@ -155,17 +166,27 @@ class DWA
     let lin_vel;
     let ang_vel;
 
+    let heading_cost = 0.0;
+    let velocity_cost = 0.0;
+    let clearance_cost = 0.0;
+
     let max_cost = 0.0;
+
+    let end_points = [];
 
     for (let dvx = Vr[0], i = 0; dvx <= Vr[1]; dvx += ((Vr[1] - Vr[0]) / this.vx_samples), i++)
     {
       for (let dvth = Vr[2], j = 0; dvth <= Vr[3]; dvth += ((Vr[3] - Vr[2]) / this.vth_samples), j++)
       {
         let predicted_trajectory = this.predict_trajectory(state, dvx, dvth);
+        end_points.push(
+          [predicted_trajectory[predicted_trajectory.length - 1][0],
+          predicted_trajectory[predicted_trajectory.length - 1][1]
+          ]);
 
-        let heading_cost = this.heading_bias * this.heading(predicted_trajectory, goal_pose);
-        let velocity_cost = this.velocity_bias * this.velocity(predicted_trajectory);
-        let clearance_cost = this.clearance_bias * this.clearance(predicted_trajectory, robot_radius, scan_range, scan_data, scan_offset);
+        heading_cost = this.heading_bias * this.heading(predicted_trajectory, goal_pose);
+        velocity_cost = this.velocity_bias * this.velocity(predicted_trajectory);
+        clearance_cost = 0.0; //this.clearance_bias * this.clearance(predicted_trajectory, robot_radius, scan_data, scan_range, scan_offset);
 
         let cost_sum = heading_cost + velocity_cost + clearance_cost;
 
@@ -176,6 +197,17 @@ class DWA
           ang_vel = dvth;
         }
       }
+    }
+
+    for (let i = 0; i < end_points.length; i++)
+    {
+      stroke(0);
+      strokeWeight(1);
+      ellipse(
+        end_points[i][0],
+        end_points[i][1],
+        5,
+        5);
     }
 
     return [lin_vel, ang_vel];
@@ -196,9 +228,24 @@ class DWA
 
   heading(trajectory, goal_pose)
   {
-    let error = abs(normalize_angle(goal_pose[2] - trajectory[trajectory.length - 1][2]));
-    let cost = map(error, 0.0, Math.PI, 1.0, 0.0);
+    let dx = goal_pose[0] - trajectory[trajectory.length - 1][0];
+    let dy = goal_pose[1] - trajectory[trajectory.length - 1][1];
+    let error_angle = normalize_angle(atan2(dy, dx));
+    let cost_angle = error_angle - trajectory[trajectory.length - 1][2];
 
+    let cost = 0.0;
+    if (cost_angle > 0.0)
+    {
+      cost = map(cost_angle, 0.0, Math.PI, 1.0, 0.0);
+    }
+    else if (cost_angle < 0.0)
+    {
+      cost = map(cost_angle, -Math.PI, 0.0, 0.0, 1.0);
+    }
+    else
+    {
+      cost = 1.0;
+    }
     return cost;
   }
 
@@ -212,11 +259,12 @@ class DWA
 
   clearance(trajectory, robot_radius, scan_data, scan_range, scan_offset)
   {
-    let cost = 0.0;
+    let cost = 1.0;
     let x = 0.0;
     let y = 0.0;
     let dx = 0.0;
     let dy = 0.0;
+    let diff = 0.0;
 
     for (let i = 0; i < scan_data.length; i++)
     {
@@ -228,12 +276,23 @@ class DWA
       sin((scan_range[0] + scan_offset * i) + trajectory[trajectory.length - 1][2]) +
       trajectory[trajectory.length - 1][1];
 
-      dx = abs(trajectory[trajectory.length - 1][0] - x);
-      dy = abs(trajectory[trajectory.length - 1][1] - y);
-
-      if (sqrt(pow(dx, 2) + pow(dy, 2)) <= robot_radius)
+      if (x < 0.0)
       {
-        return cost = 1.0;
+        x = 0.0;
+      }
+
+      if (y < 0.0)
+      {
+        y = 0.0;
+      }
+
+      dx = trajectory[trajectory.length - 1][0] - x;
+      dy = trajectory[trajectory.length - 1][1] - y;
+
+      diff = sqrt(pow(dx, 2) + pow(dy, 2));
+      if (diff<= robot_radius)
+      {
+        return cost = 0.0;
       }
     }
 
