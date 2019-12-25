@@ -23,11 +23,11 @@ let vx_samples = 3;
 let vth_samples = 5;
 
 let dt = 0.050; // sec
-let sim_time = 1.0; //sec
+let sim_time = 5.0; //sec
 
-let heading_bias = 0.5;
-let velocity_bias = 0.5;
-let clearance_bias = 0.5;
+let heading_bias = 0.8;
+let velocity_bias = 0.1;
+let clearance_bias = 0.1;
 
 // initialization
 let axis;
@@ -108,6 +108,19 @@ function draw()
 
     robot.odom_update(vel[0], vel[1], acc[0], acc[1], dt);
     robot.draw();
+
+    let dx = robot.x - goal_pose[0];
+    let dy = robot.y - goal_pose[1];
+    let dth = robot.theta - goal_pose[4];
+
+    if (sqrt(pow(dx, 2) + pow(dy, 2)) <= robot.radius)
+    {
+      if (dth <= radians(5))
+      {
+        console.log("GOAL!!!");
+        noLoop();
+      }
+    }
 
     debug_code();
 
