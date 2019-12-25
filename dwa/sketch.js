@@ -13,11 +13,11 @@ let scan_dist = 100.0;
 let max_lin_vel = 20.0;
 let min_lin_vel = 0.0;
 
-let max_ang_vel = 1.0;
-let min_ang_vel = -1.0;
+let max_ang_vel = 2.0;
+let min_ang_vel = -2.0;
 
 let limit_lin_acc = 1.0;
-let limit_ang_acc = 0.025;
+let limit_ang_acc = 0.05;
 
 let vx_samples = 3;
 let vth_samples = 5;
@@ -115,7 +115,7 @@ function draw()
 
     if (sqrt(pow(dx, 2) + pow(dy, 2)) <= robot.radius)
     {
-      if (dth <= radians(5))
+      if (abs(dth) <= radians(10))
       {
         console.log("GOAL!!!");
         noLoop();
