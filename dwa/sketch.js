@@ -109,16 +109,27 @@ function draw()
     robot.odom_update(vel[0], vel[1], acc[0], acc[1], dt);
     robot.draw();
 
-    let dx = robot.x - goal_pose[0];
-    let dy = robot.y - goal_pose[1];
-    let dth = robot.theta - goal_pose[4];
+    let dx = goal_pose[0] - robot.x;
+    let dy = goal_pose[1] - robot.y;
+    let dth = normalize_angle(goal_pose[4] - robot.theta);
 
     if (sqrt(pow(dx, 2) + pow(dy, 2)) <= robot.radius)
     {
-      if (abs(dth) <= radians(10))
+      if (abs(dth) < radians(10))
       {
         console.log("GOAL!!!");
         noLoop();
+      }
+      else
+      {
+        if (dth < 0.0)
+        {
+          vel[1] = -0.3;
+        }
+        else if (dth > 0.0)
+        {
+          vel[1] = 0.3;
+        }
       }
     }
 
