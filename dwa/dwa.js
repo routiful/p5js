@@ -238,7 +238,7 @@ class DWA
     let dx = goal_pose[0] - trajectory[trajectory.length - 1][0];
     let dy = goal_pose[1] - trajectory[trajectory.length - 1][1];
     let diff_angle = normalize_angle(atan2(dy, dx));
-    let error_angle = diff_angle - trajectory[trajectory.length - 1][2];
+    let error_angle = normalize_angle(diff_angle - trajectory[trajectory.length - 1][2]);
 
     let cost = 0.0;
     if (error_angle > 0.0)
