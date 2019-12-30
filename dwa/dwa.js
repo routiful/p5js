@@ -161,7 +161,7 @@ class DWA
     return Vr;
   }
 
-  maximizing_objective_function(state, Vr, goal_pose, robot_radius, scan_data, scan_range, scan_offset)
+  maximizing_objective_function(state, Vr, goal_pose, robot_radius, scan_data, scan_dist)
   {
     let lin_vel;
     let ang_vel;
@@ -187,7 +187,7 @@ class DWA
 
         heading_cost = this.heading_bias * this.heading(predicted_trajectory, goal_pose);
         velocity_cost = this.velocity_bias * this.velocity(predicted_trajectory);
-        clearance_cost = 0.0; //this.clearance_bias * this.clearance(predicted_trajectory, robot_radius, scan_data, scan_range, scan_offset);
+        clearance_cost = this.clearance_bias * this.clearance(predicted_trajectory, robot_radius, scan_data, scan_dist);
 
         let cost_sum = heading_cost + velocity_cost + clearance_cost;
 
@@ -264,45 +264,48 @@ class DWA
     return cost;
   }
 
-  clearance(trajectory, robot_radius, scan_data, scan_range, scan_offset)
+  clearance(trajectory, robot_radius, scan_data, scan_dist)
   {
-    let cost = 1.0;
-    let x = 0.0;
-    let y = 0.0;
-    let dx = 0.0;
-    let dy = 0.0;
-    let diff = 0.0;
-
-    for (let i = 0; i < scan_data.length; i++)
-    {
-      x = scan_data[i] *
-        cos((scan_range[0] + scan_offset * i) + trajectory[trajectory.length - 1][2]) +
-        trajectory[trajectory.length - 1][0];
-
-      y = scan_data[i] *
-      sin((scan_range[0] + scan_offset * i) + trajectory[trajectory.length - 1][2]) +
-      trajectory[trajectory.length - 1][1];
-
-      if (x < 0.0)
-      {
-        x = 0.0;
-      }
-
-      if (y < 0.0)
-      {
-        y = 0.0;
-      }
-
-      dx = trajectory[trajectory.length - 1][0] - x;
-      dy = trajectory[trajectory.length - 1][1] - y;
-
-      diff = sqrt(pow(dx, 2) + pow(dy, 2));
-      if (diff<= robot_radius)
-      {
-        return cost = 0.0;
-      }
-    }
+    let min_scan_data = min(scan_data);
+    let cost = map(min_scan_data, robot_radius, scan_dist, 0.0, 1.0);
 
     return cost;
+    // let x = 0.0;
+    // let y = 0.0;
+    // let dx = 0.0;
+    // let dy = 0.0;
+    // let diff = 0.0;
+
+    // for (let i = 0; i < scan_data.length; i++)
+    // {
+    //   x = scan_data[i] *
+    //     cos((scan_range[0] + scan_offset * i) + trajectory[trajectory.length - 1][2]) +
+    //     trajectory[trajectory.length - 1][0];
+
+    //   y = scan_data[i] *
+    //   sin((scan_range[0] + scan_offset * i) + trajectory[trajectory.length - 1][2]) +
+    //   trajectory[trajectory.length - 1][1];
+
+    //   if (x < 0.0)
+    //   {
+    //     x = 0.0;
+    //   }
+
+    //   if (y < 0.0)
+    //   {
+    //     y = 0.0;
+    //   }
+
+    //   dx = trajectory[trajectory.length - 1][0] - x;
+    //   dy = trajectory[trajectory.length - 1][1] - y;
+
+    //   diff = sqrt(pow(dx, 2) + pow(dy, 2));
+    //   if (diff<= robot_radius)
+    //   {
+    //     return cost = 0.0;
+    //   }
+    // }
+
+    // return cost;
   }
 }
