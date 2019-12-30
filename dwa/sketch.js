@@ -103,8 +103,7 @@ function draw()
       [goal_pose[0], goal_pose[1], goal_pose[4]],
       robot.radius,
       robot.scan_data,
-      robot.scan_range,
-      robot.scan_offset);
+      robot.scan_dist);
 
     robot.odom_update(vel[0], vel[1], acc[0], acc[1], dt);
     robot.draw();
