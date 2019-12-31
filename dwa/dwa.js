@@ -44,8 +44,37 @@ class DWA
 
     let get_state = state.slice(); // Deep copy
 
-    let delta_s = input[0] * dt;
-    let delta_theta = input[1] * dt;
+    let epsilon = 0.000000001;
+    if (input[0] - get_state[3] > epsilon)
+    {
+      get_state[3] = get_state[3] + this.limit_lin_acc * dt;
+    }
+    else if (input[0] - get_state[3] < -epsilon)
+    {
+      get_state[3] = get_state[3] - this.limit_lin_acc * dt;
+    }
+    else
+    {
+      get_state[3] = input[0];
+    }
+
+    if (input[1] - get_state[4] > epsilon)
+    {
+      get_state[4] = get_state[4] + this.limit_ang_acc * dt;
+    }
+    else if (input[1] - get_state[4] < -epsilon)
+    {
+      get_state[4] = get_state[4] - this.limit_ang_acc * dt;
+    }
+    else
+    {
+      get_state[4] = input[1];
+    }
+
+    // let delta_s = input[0] * dt;
+    // let delta_theta = input[1] * dt;
+    let delta_s = get_state[3] * dt;
+    let delta_theta = get_state[4] * dt;
 
     get_state[0] += delta_s * cos(get_state[2] + (delta_theta / 2.0));
     get_state[1] += delta_s * sin(get_state[2] + (delta_theta / 2.0));
@@ -63,8 +92,8 @@ class DWA
       get_state[1] = 0.0;
     }
 
-    get_state[3] = input[0];
-    get_state[4] = input[1];
+    // get_state[3] = input[0];
+    // get_state[4] = input[1];
 
     return get_state;
   }
@@ -202,7 +231,6 @@ class DWA
 
     for (let i = 0; i < end_points.length; i++)
     {
-      push();
       stroke(0);
       ellipse(
         end_points[i][0],
@@ -212,9 +240,8 @@ class DWA
       line(
         end_points[i][0],
         end_points[i][1],
-        end_points[i][0] + cos(end_points[i][2]) * 10,
-        end_points[i][1] + sin(end_points[i][2]) * 10);
-      pop();
+        end_points[i][0] + cos(end_points[i][2]) * 20,
+        end_points[i][1] + sin(end_points[i][2]) * 20);
     }
 
     return [lin_vel, ang_vel];
@@ -266,46 +293,46 @@ class DWA
 
   clearance(trajectory, robot_radius, scan_data, scan_dist)
   {
-    let min_scan_data = min(scan_data);
-    let cost = map(min_scan_data, robot_radius, scan_dist, 0.0, 1.0);
+    // let min_scan_data = min(scan_data);
+    // let cost = map(min_scan_data, robot_radius, scan_dist, 0.0, 1.0);
+
+    let cost = 0.0;
+    let x = 0.0;
+    let y = 0.0;
+    let dx = 0.0;
+    let dy = 0.0;
+    let diff = 0.0;
+
+    for (let i = 0; i < scan_data.length; i++)
+    {
+      x = scan_data[i] *
+        cos((scan_range[0] + scan_offset * i) + trajectory[trajectory.length - 1][2]) +
+        trajectory[trajectory.length - 1][0];
+
+      y = scan_data[i] *
+      sin((scan_range[0] + scan_offset * i) + trajectory[trajectory.length - 1][2]) +
+      trajectory[trajectory.length - 1][1];
+
+      if (x < 0.0)
+      {
+        x = 0.0;
+      }
+
+      if (y < 0.0)
+      {
+        y = 0.0;
+      }
+
+      dx = trajectory[trajectory.length - 1][0] - x;
+      dy = trajectory[trajectory.length - 1][1] - y;
+
+      diff = sqrt(pow(dx, 2) + pow(dy, 2));
+      if (diff<= robot_radius)
+      {
+        return cost = 0.0;
+      }
+    }
 
     return cost;
-    // let x = 0.0;
-    // let y = 0.0;
-    // let dx = 0.0;
-    // let dy = 0.0;
-    // let diff = 0.0;
-
-    // for (let i = 0; i < scan_data.length; i++)
-    // {
-    //   x = scan_data[i] *
-    //     cos((scan_range[0] + scan_offset * i) + trajectory[trajectory.length - 1][2]) +
-    //     trajectory[trajectory.length - 1][0];
-
-    //   y = scan_data[i] *
-    //   sin((scan_range[0] + scan_offset * i) + trajectory[trajectory.length - 1][2]) +
-    //   trajectory[trajectory.length - 1][1];
-
-    //   if (x < 0.0)
-    //   {
-    //     x = 0.0;
-    //   }
-
-    //   if (y < 0.0)
-    //   {
-    //     y = 0.0;
-    //   }
-
-    //   dx = trajectory[trajectory.length - 1][0] - x;
-    //   dy = trajectory[trajectory.length - 1][1] - y;
-
-    //   diff = sqrt(pow(dx, 2) + pow(dy, 2));
-    //   if (diff<= robot_radius)
-    //   {
-    //     return cost = 0.0;
-    //   }
-    // }
-
-    // return cost;
   }
 }
