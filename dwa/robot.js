@@ -33,11 +33,11 @@ class Robot
     let epsilon = 0.000000001;
     if (lin_vel - this.lin_vel > epsilon)
     {
-      this.lin_vel = this.lin_vel + this.lin_acc;
+      this.lin_vel = this.lin_vel + this.lin_acc * dt;
     }
     else if (lin_vel - this.lin_vel < -epsilon)
     {
-      this.lin_vel = this.lin_vel - this.lin_acc;
+      this.lin_vel = this.lin_vel - this.lin_acc * dt;
     }
     else
     {
@@ -46,11 +46,11 @@ class Robot
 
     if (ang_vel - this.ang_vel > epsilon)
     {
-      this.ang_vel = this.ang_vel + this.ang_acc;
+      this.ang_vel = this.ang_vel + this.ang_acc * dt;
     }
     else if (ang_vel - this.ang_vel < -epsilon)
     {
-      this.ang_vel = this.ang_vel - this.ang_acc;
+      this.ang_vel = this.ang_vel - this.ang_acc * dt;
     }
     else
     {
