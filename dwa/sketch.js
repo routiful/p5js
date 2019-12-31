@@ -10,20 +10,20 @@ let scan_offset = radians(10.0);
 let scan_dist = 100.0;
 
 // dwa config
-let max_lin_vel = 20.0;
+let max_lin_vel = 100.0;
 let min_lin_vel = 0.0;
 
-let max_ang_vel = 2.0;
-let min_ang_vel = -2.0;
+let max_ang_vel = 50.0;
+let min_ang_vel = -50.0;
 
-let limit_lin_acc = 1.0;
-let limit_ang_acc = 0.05;
+let limit_lin_acc = 100.0;
+let limit_ang_acc = 10.0;
 
 let vx_samples = 3;
-let vth_samples = 5;
+let vth_samples = 1;
 
-let dt = 0.050; // sec
-let sim_time = 5.0; //sec
+let dt = 0.010; // sec
+let sim_time = 3.0; //sec
 
 let heading_bias = 0.8;
 let velocity_bias = 0.1;
@@ -169,7 +169,7 @@ function keyPressed()
   acc[1] = limit_ang_acc;
 
   let lin_vel_step = 3.0;
-  let ang_vel_step = 0.1;
+  let ang_vel_step = 0.5;
 
   if (key == 'w')
   {
