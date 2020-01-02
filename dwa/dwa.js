@@ -71,8 +71,6 @@ class DWA
       get_state[4] = input[1];
     }
 
-    // let delta_s = input[0] * dt;
-    // let delta_theta = input[1] * dt;
     let delta_s = get_state[3] * dt;
     let delta_theta = get_state[4] * dt;
 
@@ -91,9 +89,6 @@ class DWA
     {
       get_state[1] = 0.0;
     }
-
-    // get_state[3] = input[0];
-    // get_state[4] = input[1];
 
     return get_state;
   }
@@ -216,7 +211,7 @@ class DWA
 
         heading_cost = this.heading_bias * this.heading(predicted_trajectory, goal_pose);
         velocity_cost = this.velocity_bias * this.velocity(predicted_trajectory);
-        clearance_cost = this.clearance_bias * this.clearance(predicted_trajectory, robot_radius, scan_data, scan_dist);
+        clearance_cost = 0.0; //this.clearance_bias * this.clearance(predicted_trajectory, robot_radius, scan_data, scan_dist);
 
         let cost_sum = heading_cost + velocity_cost + clearance_cost;
 
@@ -231,12 +226,14 @@ class DWA
 
     for (let i = 0; i < end_points.length; i++)
     {
-      stroke(0);
+      noStroke();
+      fill(0, 0, 255);
       ellipse(
         end_points[i][0],
         end_points[i][1],
         5,
         5);
+      stroke(0, 0, 255);
       line(
         end_points[i][0],
         end_points[i][1],
