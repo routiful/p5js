@@ -25,9 +25,9 @@ let vth_samples = 2;
 let dt = 0.010; // sec
 let sim_time = 3.0; //sec
 
-let heading_bias = 0.8;
-let velocity_bias = 0.1;
-let clearance_bias = 0.1;
+let heading_bias = 1.0;
+let velocity_bias = 1.0;
+let clearance_bias = 1.0;
 
 // initialization
 let axis;
@@ -111,8 +111,9 @@ function draw()
     let dx = goal_pose[0] - robot.x;
     let dy = goal_pose[1] - robot.y;
     let dth = normalize_angle(goal_pose[4] - robot.theta);
+    let dist_error = sqrt(pow(dx, 2) + pow(dy, 2));
 
-    if (sqrt(pow(dx, 2) + pow(dy, 2)) <= robot.radius)
+    if (dist_error <= robot.radius)
     {
       if (abs(dth) < radians(10))
       {
