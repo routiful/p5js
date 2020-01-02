@@ -210,7 +210,7 @@ class DWA
           ]);
 
         heading_cost = this.heading_bias * this.heading(predicted_trajectory, goal_pose);
-        velocity_cost = this.velocity_bias * this.velocity(predicted_trajectory);
+        velocity_cost = 0.0; //this.velocity_bias * this.velocity(predicted_trajectory);
         clearance_cost = 0.0; //this.clearance_bias * this.clearance(predicted_trajectory, robot_radius, scan_data, scan_dist);
 
         let cost_sum = heading_cost + velocity_cost + clearance_cost;
