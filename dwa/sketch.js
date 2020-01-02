@@ -16,8 +16,8 @@ let min_lin_vel = 0.0;
 let max_ang_vel = 50.0;
 let min_ang_vel = -50.0;
 
-let limit_lin_acc = 10.0;
-let limit_ang_acc = 10.0;
+let limit_lin_acc = 20.0;
+let limit_ang_acc = 20.0;
 
 let vx_samples = 2;
 let vth_samples = 2;
@@ -97,7 +97,7 @@ function draw()
 
     predicted_robot_state = dwa.predict_motion(predicted_robot_state, vel, dt);
     resulting_search_space = dwa.update_search_space(predicted_robot_state);
-    dwa.maximizing_objective_function(
+    vel = dwa.maximizing_objective_function(
       predicted_robot_state,
       resulting_search_space,
       [goal_pose[0], goal_pose[1], goal_pose[4]],
@@ -170,7 +170,7 @@ function keyPressed()
   acc[1] = limit_ang_acc;
 
   let lin_vel_step = 3.0;
-  let ang_vel_step = 0.5;
+  let ang_vel_step = 1.0;
 
   if (key == 'w')
   {
