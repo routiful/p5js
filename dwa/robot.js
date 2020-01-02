@@ -232,12 +232,12 @@ class Robot
 
       if (this.scan_data[j] >= this.scan_dist)
       {
-        stroke(255, 255, 0);
+        stroke(255, 255, 0, 100);
         line(0.0, 0.0, cos(i) * this.scan_dist, sin(i) * this.scan_dist);
       }
       else
       {
-        stroke(255, 0, 0);
+        stroke(255, 0, 0, 100);
         line(0.0, 0.0, cos(i) * this.scan_data[j], sin(i) * this.scan_data[j]);
       }
       pop();
