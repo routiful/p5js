@@ -16,11 +16,11 @@ let min_lin_vel = 0.0;
 let max_ang_vel = 50.0;
 let min_ang_vel = -50.0;
 
-let limit_lin_acc = 100.0;
+let limit_lin_acc = 10.0;
 let limit_ang_acc = 10.0;
 
-let vx_samples = 3;
-let vth_samples = 1;
+let vx_samples = 2;
+let vth_samples = 2;
 
 let dt = 0.010; // sec
 let sim_time = 3.0; //sec
@@ -97,7 +97,7 @@ function draw()
 
     predicted_robot_state = dwa.predict_motion(predicted_robot_state, vel, dt);
     resulting_search_space = dwa.update_search_space(predicted_robot_state);
-    vel = dwa.maximizing_objective_function(
+    dwa.maximizing_objective_function(
       predicted_robot_state,
       resulting_search_space,
       [goal_pose[0], goal_pose[1], goal_pose[4]],
