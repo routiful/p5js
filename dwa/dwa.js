@@ -98,71 +98,6 @@ class DWA
     // update possible velocity
     let Vs = [this.min_lin_vel, this.max_lin_vel, this.min_ang_vel, this.max_ang_vel];
 
-    // update admissible velocity
-    // let Va = [];
-    // let check_scan_data = false;
-    // let check_obstacles = false;
-    // let radius_circular_trajectory = 0.0;
-    // let theta_circular_trajectory = 0.0;
-    // let circular_trajectory = 0.0;
-
-    // for (let i = 0; i < scan_data.length; i++)
-    // {
-    //   if (scan_data[i] < scan_dist)
-    //   {
-    //     check_scan_data = true;
-    //   }
-    // }
-
-    // if (check_scan_data == false)
-    // {
-    //   Va = [
-    //     this.min_lin_vel,
-    //     this.max_lin_vel,
-    //     this.min_ang_vel,
-    //     this.max_ang_vel];
-    // }
-    // else
-    // {
-      // if (state[4] == 0.0)
-      // {
-      //   radius_circular_trajectory = scan_dist;
-      //   theta_circular_trajectory = 1.0;
-      // }
-      // else
-      // {
-      //   radius_circular_trajectory = state[3] / state[4];
-      //   theta_circular_trajectory = state[4] * this.dt;
-      // }
-
-      // circular_trajectory = radius_circular_trajectory * theta_circular_trajectory;
-
-      // for (let i = 0; i < scan_data.length; i++)
-      // {
-      //   if (scan_data[i] <= circular_trajectory)
-      //   {
-      //     check_obstacles = true;
-      //   }
-      // }
-
-      // if (check_obstacles == true)
-      // {
-      //   Va = [
-      //     this.min_lin_vel,
-      //     sqrt(2 * circular_trajectory * acc[0]),
-      //     -1.0 * sqrt(2 * circular_trajectory * acc[1]),
-      //     sqrt(2 * circular_trajectory * acc[1])];
-      // }
-      // else
-      // {
-      //   Va = [
-      //     this.min_lin_vel,
-      //     this.max_lin_vel,
-      //     this.min_ang_vel,
-      //     this.max_ang_vel];
-      // }
-    // }
-
     // update dynamic window velocity
     let Vd = [
       state[3] - this.limit_lin_acc * this.dt,
@@ -176,19 +111,14 @@ class DWA
       min(Vd[1], Vs[1]),
       max(Vd[2], Vs[2]),
       min(Vd[3], Vs[3])];
-    // let Vr = [
-    //   max(Vd[0], max(Vs[0], Va[0])),
-    //   min(Vd[1], min(Vs[1], Va[1])),
-    //   max(Vd[2], max(Vs[2], Va[2])),
-    //   min(Vd[3], min(Vs[3], Va[3]))];
 
     return Vr;
   }
 
   maximizing_objective_function(state, Vr, goal_pose, robot_radius, scan_data, scan_dist)
   {
-    let lin_vel;
-    let ang_vel;
+    let lin_vel = 0.0;
+    let ang_vel = 0.0;
 
     let heading_cost = 0.0;
     let velocity_cost = 0.0;
