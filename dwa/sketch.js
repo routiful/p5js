@@ -10,23 +10,23 @@ let scan_offset = radians(10.0);
 let scan_dist = 100.0;
 
 // dwa config
-let max_lin_vel = 100.0;
+let max_lin_vel = 25.0;
 let min_lin_vel = 0.0;
 
-let max_ang_vel = 5.0;
-let min_ang_vel = -5.0;
+let max_ang_vel = 50.0;
+let min_ang_vel = -50.0;
 
-let limit_lin_acc = 30.0;
-let limit_ang_acc = 1.0;
+let limit_lin_acc = 50.0;
+let limit_ang_acc = 25.0;
 
-let vx_samples = 10;
-let vth_samples = 2;
+let vx_samples = 2;
+let vth_samples = 5;
 
 let dt = 0.050; // sec
 let sim_time = 3.0; //sec
 
-let heading_bias = 1.0;
-let velocity_bias = 1.0;
+let heading_bias = 0.20;
+let velocity_bias = 0.5;
 let clearance_bias = 1.0;
 
 // initialization
@@ -42,7 +42,8 @@ let vel = [0.0, 0.0];
 let acc = [limit_lin_acc, limit_ang_acc];
 
 let predicted_robot_state = [x_in, y_in, theta_in, vel[0], vel[1]];
-let goal_pose = [0.0, 0.0, 0.0];
+// let goal_pose = [192.0, 64.0, 216.0, 63.0, -0.04164257909858842];
+let goal_pose = [267.0, 323.0, 268.0, 346.0, 1.5273454314033659];
 let resulting_search_space = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
 
 function setup()
@@ -72,7 +73,7 @@ function setup()
   obstacles[3] = new Obstacle(215, 114, 265, 114, 265, 164, 215, 164);
   obstacles[4] = new Obstacle(134, 32, 188, 32, 158, 88, 134, 32);
 
-  noLoop();
+  // noLoop();
 }
 
 function draw()
