@@ -100,10 +100,10 @@ class DWA
 
     // update dynamic window velocity
     let Vd = [
-      state[3] - this.limit_lin_acc * this.dt,
-      state[3] + this.limit_lin_acc * this.dt,
-      state[4] - this.limit_ang_acc * this.dt,
-      state[4] + this.limit_ang_acc * this.dt];
+      state[3] - this.limit_lin_acc * this.dt * 1.0,
+      state[3] + this.limit_lin_acc * this.dt * 1.0,
+      state[4] - this.limit_ang_acc * this.dt * 1.0,
+      state[4] + this.limit_ang_acc * this.dt * 1.0];
 
     // update resulting velocity
     let Vr = [
@@ -127,6 +127,7 @@ class DWA
     let max_cost = 0.0;
 
     let end_points = [];
+    let max_cost_points = 0;
 
     for (let dvx = Vr[0], i = 0; dvx <= Vr[1]; dvx += ((Vr[1] - Vr[0]) / this.vx_samples), i++)
     {
@@ -140,14 +141,15 @@ class DWA
           ]);
 
         heading_cost = this.heading_bias * this.heading(predicted_trajectory, goal_pose);
-        velocity_cost = 0.0; //this.velocity_bias * this.velocity(predicted_trajectory);
-        clearance_cost = 0.0; //this.clearance_bias * this.clearance(predicted_trajectory, robot_radius, scan_data, scan_dist);
+        velocity_cost = this.velocity_bias * this.velocity(predicted_trajectory);
+        clearance_cost = this.clearance_bias * this.clearance(predicted_trajectory, robot_radius, scan_data, scan_dist);
 
         let cost_sum = heading_cost + velocity_cost + clearance_cost;
 
         if (max_cost <= cost_sum)
         {
           max_cost = cost_sum;
+          max_cost_points = i + j;
           lin_vel = dvx;
           ang_vel = dvth;
         }
@@ -157,18 +159,36 @@ class DWA
     for (let i = 0; i < end_points.length; i++)
     {
       noStroke();
-      fill(0, 0, 255);
-      ellipse(
-        end_points[i][0],
-        end_points[i][1],
-        5,
-        5);
-      stroke(0, 0, 255);
-      line(
-        end_points[i][0],
-        end_points[i][1],
-        end_points[i][0] + cos(end_points[i][2]) * 20,
-        end_points[i][1] + sin(end_points[i][2]) * 20);
+      if (i == max_cost_points)
+      {
+        fill(255, 0, 255);
+        ellipse(
+          end_points[i][0],
+          end_points[i][1],
+          5,
+          5);
+        stroke(255, 0, 255);
+        line(
+          end_points[i][0],
+          end_points[i][1],
+          end_points[i][0] + cos(end_points[i][2]) * 20,
+          end_points[i][1] + sin(end_points[i][2]) * 20);
+      }
+      else
+      {
+        fill(0, 0, 255);
+        ellipse(
+          end_points[i][0],
+          end_points[i][1],
+          5,
+          5);
+        stroke(0, 0, 255);
+        line(
+          end_points[i][0],
+          end_points[i][1],
+          end_points[i][0] + cos(end_points[i][2]) * 20,
+          end_points[i][1] + sin(end_points[i][2]) * 20);
+      }
     }
 
     return [lin_vel, ang_vel];
