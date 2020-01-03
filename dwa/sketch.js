@@ -13,14 +13,14 @@ let scan_dist = 100.0;
 let max_lin_vel = 25.0;
 let min_lin_vel = 0.0;
 
-let max_ang_vel = 50.0;
-let min_ang_vel = -50.0;
+let max_ang_vel = 10.0;
+let min_ang_vel = -10.0;
 
 let limit_lin_acc = 50.0;
-let limit_ang_acc = 25.0;
+let limit_ang_acc = 5.0;
 
-let vx_samples = 2;
-let vth_samples = 5;
+let vx_samples = 10;
+let vth_samples = 10;
 
 let dt = 0.050; // sec
 let sim_time = 3.0; //sec
