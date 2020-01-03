@@ -149,7 +149,7 @@ class DWA
         if (max_cost <= cost_sum)
         {
           max_cost = cost_sum;
-          max_cost_points = i + j;
+          max_cost_points = (i * (this.vth_samples + 1)) + j;
           lin_vel = dvx;
           ang_vel = dvth;
         }
@@ -161,33 +161,33 @@ class DWA
       noStroke();
       if (i == max_cost_points)
       {
-        fill(255, 0, 255);
+        fill(0, 0, 0, 255);
         ellipse(
           end_points[i][0],
           end_points[i][1],
           5,
           5);
-        stroke(255, 0, 255);
+        stroke(0, 0, 0, 255);
         line(
+          state[0],
+          state[1],
           end_points[i][0],
-          end_points[i][1],
-          end_points[i][0] + cos(end_points[i][2]) * 20,
-          end_points[i][1] + sin(end_points[i][2]) * 20);
+          end_points[i][1]);
       }
       else
       {
-        fill(0, 0, 255);
+        fill(0, 0, 255, 50);
         ellipse(
           end_points[i][0],
           end_points[i][1],
           5,
           5);
-        stroke(0, 0, 255);
+        stroke(0, 0, 255, 50);
         line(
+          state[0],
+          state[1],
           end_points[i][0],
-          end_points[i][1],
-          end_points[i][0] + cos(end_points[i][2]) * 20,
-          end_points[i][1] + sin(end_points[i][2]) * 20);
+          end_points[i][1]);
       }
     }
 
@@ -240,46 +240,9 @@ class DWA
 
   clearance(trajectory, robot_radius, scan_data, scan_dist)
   {
-    // let min_scan_data = min(scan_data);
-    // let cost = map(min_scan_data, robot_radius, scan_dist, 0.0, 1.0);
+    let min_scan_data = min(scan_data);
+    let cost = map(min_scan_data, robot_radius * 1.5, scan_dist, 0.0, 1.0);
 
-    let cost = 0.0;
-    let x = 0.0;
-    let y = 0.0;
-    let dx = 0.0;
-    let dy = 0.0;
-    let diff = 0.0;
-
-    for (let i = 0; i < scan_data.length; i++)
-    {
-      x = scan_data[i] *
-        cos((scan_range[0] + scan_offset * i) + trajectory[trajectory.length - 1][2]) +
-        trajectory[trajectory.length - 1][0];
-
-      y = scan_data[i] *
-      sin((scan_range[0] + scan_offset * i) + trajectory[trajectory.length - 1][2]) +
-      trajectory[trajectory.length - 1][1];
-
-      if (x < 0.0)
-      {
-        x = 0.0;
-      }
-
-      if (y < 0.0)
-      {
-        y = 0.0;
-      }
-
-      dx = trajectory[trajectory.length - 1][0] - x;
-      dy = trajectory[trajectory.length - 1][1] - y;
-
-      diff = sqrt(pow(dx, 2) + pow(dy, 2));
-      if (diff<= robot_radius)
-      {
-        return cost = 0.0;
-      }
-    }
-
-    return cost;
+    return 1 / cost;
   }
 }
