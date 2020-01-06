@@ -18,11 +18,6 @@ class Robot
     this.scan_dist = scan_dist;
     this.scan_offset = scan_offset;
     this.scan_data = [];
-
-    for (let i = this.scan_range[0], j = 0; i < this.scan_range[1]; i += this.scan_offset, j++)
-    {
-      this.scan_data[j] = 0.0;
-    }
   }
 
   odom_update(lin_vel, ang_vel, lin_acc, ang_acc, dt)
@@ -30,7 +25,7 @@ class Robot
     this.lin_acc = lin_acc;
     this.ang_acc = ang_acc;
 
-    let epsilon = 0.000000001;
+    let epsilon = 0.000001;
     if (lin_vel - this.lin_vel > epsilon)
     {
       this.lin_vel = this.lin_vel + this.lin_acc * dt;
@@ -44,6 +39,11 @@ class Robot
       this.lin_vel = lin_vel;
     }
 
+    if (abs(this.lin_vel) < epsilon)
+    {
+      this.lin_vel = 0.0;
+    }
+
     if (ang_vel - this.ang_vel > epsilon)
     {
       this.ang_vel = this.ang_vel + this.ang_acc * dt;
@@ -55,6 +55,11 @@ class Robot
     else
     {
       this.ang_vel = ang_vel;
+    }
+
+    if (abs(this.ang_vel) < epsilon)
+    {
+      this.ang_vel = 0.0;
     }
 
     let delta_s = this.lin_vel * dt;
