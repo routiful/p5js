@@ -25,9 +25,9 @@ let vth_samples = 10;
 let dt = 0.050; // sec
 let sim_time = 3.0; //sec
 
-let heading_bias = 0.20;
-let velocity_bias = 0.5;
-let clearance_bias = 1.0;
+let heading_bias = 1.0;
+let velocity_bias = 2.0;
+let clearance_bias = 2.0;
 
 // initialization
 let axis;
@@ -42,8 +42,8 @@ let vel = [0.0, 0.0];
 let acc = [limit_lin_acc, limit_ang_acc];
 
 let predicted_robot_state = [x_in, y_in, theta_in, vel[0], vel[1]];
-// let goal_pose = [192.0, 64.0, 216.0, 63.0, -0.04164257909858842];
-let goal_pose = [267.0, 323.0, 268.0, 346.0, 1.5273454314033659];
+let goal_pose = [192.0, 64.0, 216.0, 63.0, -0.04164257909858842];
+// let goal_pose = [267.0, 323.0, 268.0, 346.0, 1.5273454314033659];
 let resulting_search_space = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
 
 function setup()
@@ -103,7 +103,9 @@ function draw()
       resulting_search_space,
       [goal_pose[0], goal_pose[1], goal_pose[4]],
       robot.radius,
-      robot.scan_data,
+      obstacles,
+      robot.scan_range,
+      robot.scan_offset,
       robot.scan_dist);
 
     robot.odom_update(vel[0], vel[1], acc[0], acc[1], dt);
