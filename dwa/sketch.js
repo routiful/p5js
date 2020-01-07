@@ -42,8 +42,8 @@ let vel = [0.0, 0.0];
 let acc = [limit_lin_acc, limit_ang_acc];
 
 let predicted_robot_state = [x_in, y_in, theta_in, vel[0], vel[1]];
-let goal_pose = [192.0, 64.0, 216.0, 63.0, -0.04164257909858842];
-// let goal_pose = [267.0, 323.0, 268.0, 346.0, 1.5273454314033659];
+// let goal_pose = [192.0, 64.0, 216.0, 63.0, -0.04164257909858842];
+let goal_pose = [267.0, 323.0, 268.0, 346.0, 1.5273454314033659];
 let resulting_search_space = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
 
 function setup()
